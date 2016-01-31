@@ -43,7 +43,7 @@ def new_team():
     db.session.add(team)
     db.session.commit()
     session['team'] = team.id
-    flash('Team successfully created.', 'info')
+    flash('Team successfully created.', 'success')
     return redirect(url_for('get_team', id=team.id), code=303)
 
 
