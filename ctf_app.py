@@ -1,6 +1,7 @@
 from flask import Flask, request, session, redirect, render_template, url_for,\
                   flash
 from flask_sqlalchemy import SQLAlchemy
+from functools import wraps
 from getwords import getwords
 from random import choice
 from sqlalchemy import func
@@ -40,6 +41,16 @@ def handle_error(exc):
     if not isinstance(exc, HTTPException):
         exc = InternalServerError()
     return render_template('error.html', error=exc)
+
+
+def require_auth(fn):
+    @wraps(fn)
+    def inner(*args, **kwargs):
+        if 'team' not in session:
+            flash('You must be logged in to a team to do that.', 'danger')
+            return redirect(url_for('login'), code=303)
+        return fn(*args, **kwargs)
+    return inner
 
 
 @app.route('/')
@@ -94,6 +105,7 @@ def auth_team():
 
 
 @app.route('/logout')
+@require_auth
 def logout():
     """Remove the team, and cycle the token."""
     if request.args.get('token') != session['csrf_token']:
