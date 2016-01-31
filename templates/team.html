@@ -1,0 +1,8 @@
+{% extends 'base.html' %}
+
+{% block body %}
+    <h1>{{ team.name }}</h1>
+    {%- if team.id == session.team %}
+    <p>{{ team.password }}</p>
+    {%- endif %}
+{%- endblock %}

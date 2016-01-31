@@ -39,7 +39,11 @@
       <div id="navbar" class="navbar-collapse collapse">
         <ul class="nav navbar-nav">
           <li><a href="{{ url_for('home') }}">Leaderboard</a></li>
-          <li><a href="{{ url_for('join_team') }}">New Team</a></li>
+          {% if 'team' in session -%}
+            <li><a href="{{ url_for('get_team', id=session.team) }}">My Team</a></li>
+          {% else -%}
+            <li><a href="{{ url_for('login') }}">Create/Join Team</a></li>
+          {% endif -%}
           <li><a href="{{ url_for('submit_flag') }}">Submit a Flag</a></li>
           <li><a href="{{ url_for('about') }}">About</a></li>
           <li><a href="{{ url_for('contact') }}">Contact</a></li>
@@ -48,6 +52,13 @@
     </div>
   </nav>
   <div class="container">
+  {%- with messages = get_flashed_messages(with_categories=True) %}
+  {%- if messages %}
+    {%- for category, message in messages %}
+    <div class="alert alert-{{ category }}" role="alert">{{ message }}</div>
+    {%- endfor %}
+  {%- endif %}
+  {%- endwith %}
     {%- block body %}{% endblock %}
   </div>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
