@@ -1,1 +1,13 @@
-body { padding-top: 70px; }
+body {
+  padding-top: 70px;
+}
+
+.create-form, .existing-form {
+  max-width: 400px;
+  padding: 0 15px;
+  margin: 0 auto 50px;
+}
+
+.create-form > input, .existing-form > input {
+  margin: 20px 0;
+}
