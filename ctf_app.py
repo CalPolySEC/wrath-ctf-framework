@@ -34,16 +34,17 @@ def new_team():
     if not name:
         flash('You must supply a team name', 'danger')
         return redirect(url_for('login'), code=303)
-    password = getwords()
-    team = Team(name=name, password=password)
-    try:
-        db.session.add(team)
-        db.session.commit()
-        session['team'] = team.id
-        return redirect(url_for('get_team', id=team.id), code=303)
-    except IntegrityError:
+    if Team.query.filter(func.lower(Team.name) == func.lower(name)).count() > 0:
         flash('That team name is taken.', 'danger')
         return redirect(url_for('login'), code=303)
+
+    password = getwords()
+    team = Team(name=name, password=password)
+    db.session.add(team)
+    db.session.commit()
+    session['team'] = team.id
+    flash('Team successfully created.', 'info')
+    return redirect(url_for('get_team', id=team.id), code=303)
 
 
 @app.route('/auth_team', methods=['POST'])
