@@ -5,7 +5,7 @@ from getwords import getwords
 from random import choice
 from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError
-from werkzeug.exceptions import Forbidden, NotFound
+from werkzeug.exceptions import HTTPException, Forbidden, NotFound, InternalServerError
 import string
 
 
@@ -29,6 +29,17 @@ def random_string(size):
 def create_csrf():
     if 'csrf_token' not in session:
         session['csrf_token'] = random_string(32)
+
+
+@app.errorhandler(400)
+@app.errorhandler(403)
+@app.errorhandler(404)
+@app.errorhandler(405)
+@app.errorhandler(500)
+def handle_error(exc):
+    if not isinstance(exc, HTTPException):
+        exc = InternalServerError()
+    return render_template('error.html', error=exc)
 
 
 @app.route('/')
