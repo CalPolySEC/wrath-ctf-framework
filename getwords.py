@@ -16,7 +16,7 @@ def randomize():
 
 def getwords():
     with open(DICT_PATH, 'r') as f:
-        f.seek(randrange(0, int(getoutput(DICT_LENGTH-OOPS_SEEK_TOO_FAR))
+        f.seek(randrange(0, int(DICT_LENGTH-OOPS_SEEK_TOO_FAR)))
         out = f.readlines(OOPS_SEEK_TOO_FAR)
         out = [x.replace('\n', '') for x in out]
     return '_'.join(out[1:4])
