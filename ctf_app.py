@@ -3,6 +3,7 @@ from flask import Flask, request, session, redirect, render_template, url_for,\
 from flask_sqlalchemy import SQLAlchemy
 from functools import wraps
 from getwords import getwords
+from hashlib import sha256
 from random import choice
 from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError
@@ -14,11 +15,24 @@ app = Flask(__name__)
 db = SQLAlchemy(app)
 
 
+association_table = db.Table('association', db.Model.metadata,
+    db.Column('team_id', db.Integer, db.ForeignKey('team.id')),
+    db.Column('flag_id', db.Integer, db.ForeignKey('flag.id'))
+)
+
+
+class Flag(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    hash = db.Column(db.String(64))
+    points = db.Column(db.Integer)
+
+
 class Team(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(128), unique=True)
     password = db.Column(db.String(128))
     points = db.Column(db.Integer, default=0)
+    flags = db.relationship('Flag', secondary=association_table)
 
 
 def random_string(size):
@@ -124,8 +138,34 @@ def get_team(id):
 
 
 @app.route('/submit')
-def submit_flag():
+@require_auth
+def flag_page():
     return render_template('submit.html')
+
+
+@app.route('/flags', methods=['POST'])
+@require_auth
+def submit_flag():
+    flag = request.form.get('flag', '')
+    flag_hash = sha256(flag.encode('utf-8')).hexdigest()
+    db_flag = Flag.query.filter_by(hash=flag_hash).first()
+    team = Team.query.filter_by(id=session['team']).first()
+
+    if db_flag is None:
+        flash('Sorry, the flag you entered is not correct.', 'danger')
+        return redirect(url_for('flag_page'), code=303)
+
+    if db_flag in team.flags:
+        flash('You\'ve already entered that flag.', 'warning')
+        return redirect(url_for('flag_page'), code=303)
+
+    team.flags.append(db_flag)
+    team.points += db_flag.points
+    db.session.add(team)
+    db.session.commit()
+    flash('Correct! You have earned {0} points for your team.'
+          .format(db_flag.points), 'success')
+    return redirect(url_for('get_team', id=session['team']), code=303)
 
 
 @app.route('/about')

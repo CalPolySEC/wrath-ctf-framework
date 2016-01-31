@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block body %}
+    <form method="POST" action="{{ url_for('submit_flag') }}">
+      <div class="input-group">
+        <input type="text" name="flag" class="form-control" placeholder="Flag" required autofocus>
+        <span class="input-group-btn">
+          <button class="btn btn-primary" type="button">Go!</button>
+        </span>
+      </div>
+    </form>
+{%- endblock %}
