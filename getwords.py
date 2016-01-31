@@ -9,9 +9,9 @@ def randomize():
     f.close()
 
 def getwords():
-    out = getoutput('head -c 32 ' + DICT_PATH)
+    randomize()
+    out = getoutput('head -n 3 ' + DICT_PATH)
     return '_'.join(out.split('\n')[:3])
 
 if __name__ == '__main__':
-    randomize()
     print(getwords())
