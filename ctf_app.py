@@ -2,9 +2,11 @@ from flask import Flask, request, session, redirect, render_template, url_for,\
                   flash
 from flask_sqlalchemy import SQLAlchemy
 from getwords import getwords
+from random import choice
 from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError
-from werkzeug.exceptions import NotFound
+from werkzeug.exceptions import Forbidden, NotFound
+import string
 
 
 app = Flask(__name__)
@@ -15,6 +17,17 @@ class Team(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(128), unique=True)
     password = db.Column(db.String(128))
+
+
+def random_string(size):
+    letters = string.ascii_letters + string.digits
+    return ''.join(choice(letters) for n in range(size))
+
+
+@app.before_request
+def create_csrf():
+    if 'csrf_token' not in session:
+        session['csrf_token'] = random_string(32)
 
 
 @app.route('/')
@@ -65,6 +78,16 @@ def auth_team():
 
     session['team'] = team.id
     return redirect(url_for('get_team', id=team.id), code=303)
+
+
+@app.route('/logout')
+def logout():
+    """Remove the team, and cycle the token."""
+    if request.args.get('token') != session['csrf_token']:
+        raise Forbidden()
+    del session['team']
+    del session['csrf_token']
+    return redirect(url_for('home'))
 
 
 @app.route('/teams/<int:id>')
