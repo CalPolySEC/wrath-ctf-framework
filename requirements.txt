@@ -1,5 +1,6 @@
 Flask==0.10.1
 Flask-SQLAlchemy==2.1
+bcrypt==2.0.0
 itsdangerous==0.24
 Jinja2==2.8
 MarkupSafe==0.23
