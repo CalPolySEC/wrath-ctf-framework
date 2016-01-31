@@ -32,15 +32,15 @@
           <span class="icon-bar"></span>
           <span class="icon-bar"></span>
         </button>
-        <a class="navbar-brand" href="/">White Hat + iFixit CTF</a>
+        <a class="navbar-brand" href="{{ url_for('home') }}">White Hat + iFixit CTF</a>
       </div>
       <div id="navbar" class="navbar-collapse collapse">
         <ul class="nav navbar-nav">
-          <li><a href="/">Leaderboard</a></li>
-          <li><a href="/new">New Team</a></li>
-          <li><a href="/submit">Submit a Flag</a></li>
-          <li><a href="/about">About</a></li>
-          <li><a href="/contact">Contact</a></li>
+          <li><a href="{{ url_for('home') }}">Leaderboard</a></li>
+          <li><a href="{{ url_for('join_team') }}">New Team</a></li>
+          <li><a href="{{ url_for('submit_flag') }}">Submit a Flag</a></li>
+          <li><a href="{{ url_for('about') }}">About</a></li>
+          <li><a href="{{ url_for('contact') }}">Contact</a></li>
         </ul>
       </div>
     </div>
