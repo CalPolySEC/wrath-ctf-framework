@@ -2,6 +2,10 @@ body {
   padding-top: 70px;
 }
 
+.no-teams {
+  text-align: center;
+}
+
 .create-form, .existing-form {
   max-width: 400px;
   padding: 0 15px;

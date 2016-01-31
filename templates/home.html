@@ -1,3 +1,23 @@
 {% extends 'base.html' %}
 {% block body %}
-{% endblock %}
+    {% if teams -%}
+    <table class="table">
+      <thead>
+        <th>Rank</th>
+        <th>Team</th>
+        <th>Points</th>
+      </thead>
+      <tbody>
+        {%- for team in teams %}
+        <tr id="team{{ team.id }}">
+          <td>{{ loop.index }}</td>
+          <td><a href="/teams/{{ team.id }}">{{ team.name }}</a></td>
+          <td>{{ team.points }}</td>
+        </tr>
+        {%- endfor %}
+      </tbody>
+    </table>
+    {% else -%}
+    <h3 class="no-teams">No teams yet :(</h3>
+    {% endif -%}
+{%- endblock %}

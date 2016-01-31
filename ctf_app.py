@@ -17,6 +17,7 @@ class Team(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(128), unique=True)
     password = db.Column(db.String(128))
+    points = db.Column(db.Integer, default=0)
 
 
 def random_string(size):
@@ -32,7 +33,8 @@ def create_csrf():
 
 @app.route('/')
 def home():
-    return render_template('home.html')
+    teams = Team.query.order_by(Team.points.desc()).all()
+    return render_template('home.html', teams=teams)
 
 
 @app.route('/login')
