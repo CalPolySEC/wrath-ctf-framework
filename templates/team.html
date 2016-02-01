@@ -3,6 +3,7 @@
 {% block body %}
     <h1>{{ team.name }}</h1>
     {%- if team.id == session.team %}
-    <p>{{ team.password }}</p>
+    <code class="password" data-password="{{ team.password }}"></code>
+    <button id="show-password" class="btn btn-default">Show</button>
     {%- endif %}
 {%- endblock %}
