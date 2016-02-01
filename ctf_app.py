@@ -35,6 +35,7 @@ class Team(db.Model):
     password = db.Column(db.String(128))
     points = db.Column(db.Integer, default=0)
     flags = db.relationship('Flag', secondary=association_table)
+    last_flag = db.Column(db.DateTime, server_default=db.func.now())
 
 
 def random_string(size):
@@ -71,7 +72,7 @@ def require_auth(fn):
 
 @app.route('/')
 def home():
-    teams = Team.query.order_by(Team.points.desc()).all()
+    teams = Team.query.order_by(Team.points.desc(), Team.last_flag).all()
     return render_template('home.html', teams=teams)
 
 
@@ -165,6 +166,7 @@ def submit_flag():
 
     team.flags.append(db_flag)
     team.points += db_flag.points
+    team.last_flag = datetime.now()
     db.session.add(team)
     db.session.commit()
     flash('Correct! You have earned {0} points for your team.'
