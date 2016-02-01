@@ -25,6 +25,8 @@ class Flag(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     hash = db.Column(db.String(64))
     points = db.Column(db.Integer)
+    category = db.Column(db.String(9))
+    level = db.Column(db.Integer)
 
 
 class Team(db.Model):
@@ -134,7 +136,9 @@ def get_team(id):
     team = Team.query.filter_by(id=id).first()
     if team is None:
         raise NotFound()
-    return render_template('team.html', team=team)
+    categories = Flag.query.group_by(Flag.category).order_by(Flag.category.asc())
+    levels = {cat.category: Flag.query.filter_by(category=cat.category).order_by(Flag.level) for cat in categories}
+    return render_template('team.html', team=team, levels=levels)
 
 
 @app.route('/submit')
