@@ -1,6 +1,6 @@
 function setCookie(key, val) {
   var d = new Date();
-  d.setTime(d.getTime() + 5 * 60 * 1000);
+  d.setTime(d.getTime() + 30 * 24 * 60 * 60 * 1000);
   document.cookie = key + '=' + val + '; path=/; expires=' + d.toGMTString()
     + ';';
 };
