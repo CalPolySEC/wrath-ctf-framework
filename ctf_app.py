@@ -58,7 +58,7 @@ def create_csrf():
 def handle_error(exc):
     if not isinstance(exc, HTTPException):
         exc = InternalServerError()
-    return render_template('error.html', error=exc)
+    return render_template('error.html', error=exc), exc.code
 
 
 def require_auth(fn):
