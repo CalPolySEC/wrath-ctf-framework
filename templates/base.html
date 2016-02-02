@@ -24,21 +24,21 @@
           <span class="icon-bar"></span>
           <span class="icon-bar"></span>
         </button>
-        <a class="navbar-brand" href="{{ url_for('home') }}">White Hat + iFixit CTF</a>
+        <a class="navbar-brand" href="{{ url_for('home_page') }}">White Hat + iFixit CTF</a>
       </div>
       <div id="navbar" class="navbar-collapse collapse">
         <ul class="nav navbar-nav">
-          <li><a href="{{ url_for('home') }}">Leaderboard</a></li>
-          <li><a href="{{ url_for('about') }}">About</a></li>
-          <li><a href="{{ url_for('contact') }}">Contact</a></li>
+          <li><a href="{{ url_for('home_page') }}">Leaderboard</a></li>
+          <li><a href="{{ url_for('about_page') }}">About</a></li>
+          <li><a href="{{ url_for('contact_page') }}">Contact</a></li>
         </ul>
         <ul class="nav navbar-nav navbar-right">
           {% if 'team' in session -%}
-          <li><a href="{{ url_for('get_team', id=session['team']) }}">My Team</a></li>
+          <li><a href="{{ url_for('team_page', id=session['team']) }}">My Team</a></li>
           <li><a href="{{ url_for('flag_page') }}">Submit a Flag</a></li>
           <li><a rel="nofollow" href="{{ url_for('logout') }}?token={{ session['csrf_token'] }}">Logout</a></li>
           {% else -%}
-          <li><a href="{{ url_for('login') }}">Create/Join Team</a></li>
+          <li><a href="{{ url_for('login_page') }}">Create/Join Team</a></li>
           {% endif -%}
         </ul>
       </div>

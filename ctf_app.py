@@ -66,20 +66,30 @@ def require_auth(fn):
     def inner(*args, **kwargs):
         if 'team' not in session:
             flash('You must be logged in to a team to do that.', 'danger')
-            return redirect(url_for('login'), code=303)
+            return redirect(url_for('login_page'), code=303)
         return fn(*args, **kwargs)
     return inner
 
 
 @app.route('/')
-def home():
+def home_page():
     teams = Team.query.order_by(Team.points.desc(), Team.last_flag).all()
     return render_template('home.html', teams=teams)
 
 
 @app.route('/login')
-def login():
+def login_page():
     return render_template('login.html')
+
+
+@app.route('/about')
+def about_page():
+    return render_template('about.html')
+
+
+@app.route('/contact')
+def contact_page():
+    return render_template('contact.html')
 
 
 @app.route('/teams', methods=['POST'])
@@ -88,10 +98,10 @@ def new_team():
     name = request.form.get('name', '')
     if not name:
         flash('You must supply a team name.', 'danger')
-        return redirect(url_for('login'), code=303)
+        return redirect(url_for('login_page'), code=303)
     if Team.query.filter(func.lower(Team.name) == name.lower()).count() > 0:
         flash('That team name is taken.', 'danger')
-        return redirect(url_for('login'), code=303)
+        return redirect(url_for('login_page'), code=303)
 
     password = getwords()
     team = Team(name=name, password=password)
@@ -99,7 +109,7 @@ def new_team():
     db.session.commit()
     session['team'] = team.id
     flash('Team successfully created.', 'success')
-    return redirect(url_for('get_team', id=team.id), code=303)
+    return redirect(url_for('team_page', id=team.id), code=303)
 
 
 @app.route('/auth_team', methods=['POST'])
@@ -110,13 +120,13 @@ def auth_team():
 
     if team is None:
         flash('No team exists with that name.', 'danger')
-        return redirect(url_for('login'), code=303)
+        return redirect(url_for('login_page'), code=303)
     if password != team.password:
         flash('Incorrect team password.', 'danger')
-        return redirect(url_for('login'), code=303)
+        return redirect(url_for('login_page'), code=303)
 
     session['team'] = team.id
-    return redirect(url_for('get_team', id=team.id), code=303)
+    return redirect(url_for('team_page', id=team.id), code=303)
 
 
 @app.route('/logout')
@@ -127,11 +137,11 @@ def logout():
         raise Forbidden()
     del session['team']
     del session['csrf_token']
-    return redirect(url_for('home'))
+    return redirect(url_for('home_page'), code=303)
 
 
 @app.route('/teams/<int:id>')
-def get_team(id):
+def team_page(id):
     team = Team.query.filter_by(id=id).first()
     if team is None:
         raise NotFound()
@@ -169,17 +179,7 @@ def submit_flag():
     db.session.commit()
     flash('Correct! You have earned {0} points for your team.'
           .format(db_flag.points), 'success')
-    return redirect(url_for('get_team', id=session['team']), code=303)
-
-
-@app.route('/about')
-def about():
-    return render_template('about.html')
-
-
-@app.route('/contact')
-def contact():
-    return render_template('contact.html')
+    return redirect(url_for('team_page', id=session['team']), code=303)
 
 
 if __name__ == '__main__':
