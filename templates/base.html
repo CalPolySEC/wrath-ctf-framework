@@ -36,7 +36,7 @@
           {% if 'team' in session -%}
           <li><a href="{{ url_for('team_page', id=session['team']) }}">My Team</a></li>
           <li><a href="{{ url_for('flag_page') }}">Submit a Flag</a></li>
-          <li><a rel="nofollow" href="{{ url_for('logout') }}?token={{ session['csrf_token'] }}">Logout</a></li>
+          <li><a rel="nofollow" href="{{ url_for('logout', token=session['csrf_token']) }}">Logout</a></li>
           {% else -%}
           <li><a href="{{ url_for('login_page') }}">Create/Join Team</a></li>
           {% endif -%}
