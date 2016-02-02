@@ -1,15 +1,15 @@
 {% extends 'base.html' %}
 {% block body %}
-    <input id="autoupdate" type="checkbox"{% if request.cookies.get('autoupdate') == '1' %} checked{% endif %}>
-    <label for="autoupdate">Auto-update every 30 seconds</label>
+    <div class="center">
+      <input id="autoupdate" type="checkbox"{% if request.cookies.get('autoupdate') == '1' %} checked{% endif %}>
+      <label for="autoupdate">Auto-update every 30 seconds</label>
+    </div>
     {% if teams -%}
     <table class="table">
-      <thead>
+      <tbody>
         <th>Rank</th>
         <th>Team</th>
         <th>Points</th>
-      </thead>
-      <tbody>
         {%- for team in teams %}
         <tr id="team{{ team.id }}">
           <td>{{ loop.index }}</td>
