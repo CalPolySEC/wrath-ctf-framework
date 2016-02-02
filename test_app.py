@@ -11,6 +11,13 @@ def client():
     return app.test_client()
 
 
+def auth(client):
+    team = Team(name='Abc', password='def')
+    db.session.add(team)
+    db.session.commit()
+    client.post('/auth_team', data={'name': 'abc', 'password': 'def'})
+
+
 def test_static_pages(client):
     for url in ('/login', '/about', '/contact'):
         rv = client.get(url)
@@ -71,5 +78,27 @@ def test_login(client):
     assert rv.headers['Location'] == 'http://localhost/teams/1'
 
 
-def test_logout(client):
+def test_logout_unauthed(client):
     rv = client.get('/logout')
+    assert rv.status_code == 303
+    assert rv.headers['Location'] == 'http://localhost/login'
+
+
+def test_logout_bad_token(client):
+    auth(client)
+    rv = client.get('/logout')
+    assert rv.status_code == 403
+    rv = client.get('/logout?token=abc')
+    assert rv.status_code == 403
+
+
+def test_logout(client):
+    auth(client)
+
+    rv = client.get('/')
+    token = rv.data.split(b'/logout?token=', 1)[1]
+    token = token.split(b'"', 1)[0].decode('utf-8')
+
+    rv = client.get('/logout?token=%s' % token)
+    assert rv.status_code == 303
+    assert rv.headers['Location'] == 'http://localhost/'
