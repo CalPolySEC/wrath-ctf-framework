@@ -23,10 +23,10 @@ $(function() {
   togglePasword();
 
   $('#show-password').click(function() {
-    if ($(this).text() == 'Show') {
-      $(this).text('Hide');
+    if ($(this).text() == 'Show password') {
+      $(this).text('Hide password');
     } else {
-      $(this).text('Show');
+      $(this).text('Show password');
     }
     togglePasword();
   });
