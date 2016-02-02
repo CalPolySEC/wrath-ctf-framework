@@ -108,9 +108,6 @@ def auth_team():
     password = request.form.get('password', '')
     team = Team.query.filter(func.lower(Team.name) == name.lower()).first()
 
-    if not password:
-        flash('You must supply a password.', 'danger')
-        return redirect(url_for('login'), code=303)
     if team is None:
         flash('No team exists with that name.', 'danger')
         return redirect(url_for('login'), code=303)
