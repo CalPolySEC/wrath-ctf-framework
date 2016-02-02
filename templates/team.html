@@ -1,20 +1,26 @@
 {% extends 'base.html' %}
 
 {% block body %}
-    <h1>{{ team.name }}</h1>
-    {%- if team.id == session.team %}
-    <code class="password" data-password="{{ team.password }}">{{ '*' * team.password|length }}</code>
-    <button id="show-password" class="btn btn-default">Show</button>
-    {%- endif %}
-    <h3>{{ team.points }} points</h3>
-    {%- for category in levels %}
-    <div class="category">
-      <div class="category-label">{{ category }}</div>
-      <div class="levels">
-      {%- for level in levels[category] -%}
-      <div class="level{% if level in team.flags %} completed{% endif %}" title="{{ level.points }} points" data-placement="top"></div>
-      {%- endfor %}
+    <div class="row">
+      <div class="col-md-10 col-md-offset-1">
+        {%- if team.id == session.team %}
+        <div class="pull-right password-box">
+          <button id="show-password" class="btn btn-default">Show password</button><br />
+          <code class="password" data-password="{{ team.password }}">{{ '*' * team.password|length }}</code>
+        </div>
+        {%- endif %}
+        <h1>{{ team.name }}</h1>
+        <div class="points">{{ team.points }} points</div>
+        {%- for category in levels %}
+        <div class="category">
+          <div class="category-label">{{ category }}</div>
+          <div class="levels">
+          {%- for level in levels[category] -%}
+          <div class="level{% if level in team.flags %} completed{% endif %}" title="{{ level.points }} points" data-placement="top"></div>
+          {%- endfor %}
+          </div>
+        </div>
+        {%- endfor %}
       </div>
     </div>
-    {%- endfor %}
 {%- endblock %}

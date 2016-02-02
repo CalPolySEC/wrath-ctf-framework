@@ -16,9 +16,22 @@ body {
   margin: 20px 0;
 }
 
+.password-box {
+  margin-top: 25px;
+  text-align: center;
+}
+
+.password-box > button {
+  margin-bottom: 10px;
+}
+
+.points {
+  font-size: 25px;
+  margin: 30px 0;
+}
+
 .category-label {
-  display: inline-block;
-  width: 80px;
+  font-size: 18px;
 }
 
 .levels {
