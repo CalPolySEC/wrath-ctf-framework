@@ -87,7 +87,7 @@ def new_team():
     """Create a new team, with a generated password."""
     name = request.form.get('name', '')
     if not name:
-        flash('You must supply a team name', 'danger')
+        flash('You must supply a team name.', 'danger')
         return redirect(url_for('login'), code=303)
     if Team.query.filter(func.lower(Team.name) == name.lower()).count() > 0:
         flash('That team name is taken.', 'danger')
