@@ -13,7 +13,7 @@
         {%- for team in teams %}
         <tr id="team{{ team.id }}">
           <td>{{ loop.index }}</td>
-          <td><a href="/teams/{{ team.id }}">{{ team.name }}</a></td>
+          <td><a href="{{ url_for('team_page', id=team.id) }}">{{ team.name }}</a></td>
           <td>{{ team.points }}</td>
         </tr>
         {%- endfor %}
