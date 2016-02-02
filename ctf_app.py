@@ -26,8 +26,14 @@ class Flag(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     hash = db.Column(db.String(64))
     points = db.Column(db.Integer)
-    category = db.Column(db.String(9))
+    category_id = db.Column(db.Integer, db.ForeignKey('category.id'))
     level = db.Column(db.Integer)
+
+
+class Category(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(20))
+    levels = db.relationship('Flag', backref='category')
 
 
 class Team(db.Model):
@@ -145,8 +151,8 @@ def team_page(id):
     team = Team.query.filter_by(id=id).first()
     if team is None:
         raise NotFound()
-    categories = Flag.query.group_by(Flag.category).order_by(Flag.category.asc())
-    levels = {cat.category: Flag.query.filter_by(category=cat.category).order_by(Flag.level) for cat in categories}
+    categories = Category.query.all()
+    levels = {cat.name: cat.levels for cat in categories}
     return render_template('team.html', team=team, levels=levels)
 
 
