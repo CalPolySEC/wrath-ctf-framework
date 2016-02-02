@@ -1,4 +1,4 @@
-from ctf_app import app, db, Team
+from ctf_app import app, db, Team, Flag
 import pytest
 import tempfile
 
@@ -115,3 +115,39 @@ def test_logout(client):
     rv = client.get('/logout?token=%s' % token)
     assert rv.status_code == 303
     assert rv.headers['Location'] == 'http://localhost/'
+
+
+def test_submit_page(client):
+    rv = client.get('/submit')
+    assert rv.status_code == 303
+    assert rv.headers['Location'] == 'http://localhost/login'
+
+    auth(client)
+
+    rv = client.get('/submit')
+    assert rv.status_code == 200
+
+
+def test_flag_submission(client):
+    # SHA-256 of "fleg"
+    sha = 'cc78431eedada5a45ac10eae0838b5f84e023758e9baec5ed1f58ffa3722527a'
+    fleg = Flag(hash=sha, points=10, category='Bandit', level=0)
+    db.session.add(fleg)
+    db.session.commit()
+
+    auth(client)
+
+    rv = client.post('/flags', data={'flag': 'abc'})
+    assert rv.status_code == 303
+    assert rv.headers['Location'] == 'http://localhost/submit'
+    assert b'Sorry, the flag you entered is not correct.' in client.get('/').data
+
+    rv = client.post('/flags', data={'flag': 'fleg'})
+    assert rv.status_code == 303
+    assert rv.headers['Location'] == 'http://localhost/teams/1'
+    assert b'Correct! You have earned 10 points for your team.' in client.get('/').data
+
+    rv = client.post('/flags', data={'flag': 'fleg'})
+    assert rv.status_code == 303
+    assert rv.headers['Location'] == 'http://localhost/submit'
+    assert b'You&#39;ve already entered that flag.' in client.get('/').data
