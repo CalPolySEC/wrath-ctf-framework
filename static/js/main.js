@@ -44,7 +44,7 @@ $(function() {
     }
 
     var updateReloadTimerState = function() {
-      if ($('#autoupdate').is(':checked')) {
+      if ($(this).is(':checked')) {
         setCookie('autoupdate', '1');
         timer = setUpdate();
       } else {
@@ -56,7 +56,7 @@ $(function() {
       }
     };
     $('#autoupdate').change(updateReloadTimerState);
-    updateReloadTimerState();
+    $('#autoupdate').each(updateReloadTimerState);
   })();
 
   console.log('Hello, friend.');
