@@ -89,7 +89,7 @@ def new_team():
     if not name:
         flash('You must supply a team name', 'danger')
         return redirect(url_for('login'), code=303)
-    if Team.query.filter(func.lower(Team.name) == func.lower(name)).count() > 0:
+    if Team.query.filter(func.lower(Team.name) == name.lower()).count() > 0:
         flash('That team name is taken.', 'danger')
         return redirect(url_for('login'), code=303)
 
@@ -106,7 +106,7 @@ def new_team():
 def auth_team():
     name = request.form.get('name', '')
     password = request.form.get('password', '')
-    team = Team.query.filter(func.lower(Team.name) == func.lower(name)).first()
+    team = Team.query.filter(func.lower(Team.name) == name.lower()).first()
 
     if not password:
         flash('You must supply a password.', 'danger')
