@@ -18,6 +18,19 @@ def auth(client):
     client.post('/auth_team', data={'name': 'abc', 'password': 'def'})
 
 
+def test_error(client):
+    @app.route('/internal')
+    def cause_a_problem():
+        1 / 0
+
+    app.config['DEBUG'] = False
+
+    for url, code in (('/asdf', 404), ('/teams', 405), ('/internal', 500)):
+        rv = client.get(url)
+        assert b'https://http.cat/%d' % code in rv.data
+        assert rv.status_code == code
+
+
 def test_static_pages(client):
     for url in ('/login', '/about', '/contact'):
         rv = client.get(url)
