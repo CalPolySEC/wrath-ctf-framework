@@ -1,4 +1,4 @@
-from ctf_app import app, db, Team, Flag
+from ctf_app import app, db, Team, Flag, Category
 import pytest
 import tempfile
 
@@ -137,7 +137,9 @@ def test_flag_submission(client):
 
     # SHA-256 of "fleg"
     sha = 'cc78431eedada5a45ac10eae0838b5f84e023758e9baec5ed1f58ffa3722527a'
-    fleg = Flag(hash=sha, points=10, category='Bandit', level=0)
+    cat = Category(name='Bandit')
+    fleg = Flag(hash=sha, points=10, category=cat, level=0)
+    db.session.add(cat)
     db.session.add(fleg)
     db.session.commit()
 
