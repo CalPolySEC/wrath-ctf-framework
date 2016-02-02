@@ -98,6 +98,22 @@ def contact_page():
     return render_template('contact.html')
 
 
+@app.route('/submit')
+@require_auth
+def flag_page():
+    return render_template('submit.html')
+
+
+@app.route('/teams/<int:id>')
+def team_page(id):
+    team = Team.query.filter_by(id=id).first()
+    if team is None:
+        raise NotFound()
+    categories = Category.query.all()
+    levels = {cat.name: cat.levels for cat in categories}
+    return render_template('team.html', team=team, levels=levels)
+
+
 @app.route('/teams', methods=['POST'])
 def new_team():
     """Create a new team, with a generated password."""
@@ -144,22 +160,6 @@ def logout():
     del session['team']
     del session['csrf_token']
     return redirect(url_for('home_page'), code=303)
-
-
-@app.route('/teams/<int:id>')
-def team_page(id):
-    team = Team.query.filter_by(id=id).first()
-    if team is None:
-        raise NotFound()
-    categories = Category.query.all()
-    levels = {cat.name: cat.levels for cat in categories}
-    return render_template('team.html', team=team, levels=levels)
-
-
-@app.route('/submit')
-@require_auth
-def flag_page():
-    return render_template('submit.html')
 
 
 @app.route('/flags', methods=['POST'])
