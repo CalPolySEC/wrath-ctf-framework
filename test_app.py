@@ -135,6 +135,9 @@ def test_flag_submission(client):
     db.session.add(fleg)
     db.session.commit()
 
+    rv = client.get('/')
+    assert b'<td>10</td>' not in rv.data
+
     auth(client)
 
     rv = client.post('/flags', data={'flag': 'abc'})
@@ -151,3 +154,6 @@ def test_flag_submission(client):
     assert rv.status_code == 303
     assert rv.headers['Location'] == 'http://localhost/submit'
     assert b'You&#39;ve already entered that flag.' in client.get('/').data
+
+    rv = client.get('/')
+    assert b'<td>10</td>' in rv.data
