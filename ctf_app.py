@@ -166,20 +166,18 @@ def submit_flag():
 
     if db_flag is None:
         flash('Sorry, the flag you entered is not correct.', 'danger')
-        return redirect(url_for('flag_page'), code=303)
-
-    if db_flag in team.flags:
+    elif db_flag in team.flags:
         flash('You\'ve already entered that flag.', 'warning')
-        return redirect(url_for('flag_page'), code=303)
+    else:
+        team.flags.append(db_flag)
+        team.points += db_flag.points
+        team.last_flag = datetime.now()
+        db.session.add(team)
+        db.session.commit()
+        flash('Correct! You have earned {0} points for your team.'
+              .format(db_flag.points), 'success')
 
-    team.flags.append(db_flag)
-    team.points += db_flag.points
-    team.last_flag = datetime.now()
-    db.session.add(team)
-    db.session.commit()
-    flash('Correct! You have earned {0} points for your team.'
-          .format(db_flag.points), 'success')
-    return redirect(url_for('team_page', id=session['team']), code=303)
+    return redirect(url_for('flag_page'), code=303)
 
 
 if __name__ == '__main__':

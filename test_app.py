@@ -129,6 +129,12 @@ def test_submit_page(client):
 
 
 def test_flag_submission(client):
+    def assert_flag(flag, msg):
+        rv = client.post('/flags', data={'flag': flag})
+        assert rv.status_code == 303
+        assert rv.headers['Location'] == 'http://localhost/submit'
+        assert msg in client.get('/').data
+
     # SHA-256 of "fleg"
     sha = 'cc78431eedada5a45ac10eae0838b5f84e023758e9baec5ed1f58ffa3722527a'
     fleg = Flag(hash=sha, points=10, category='Bandit', level=0)
@@ -140,20 +146,9 @@ def test_flag_submission(client):
 
     auth(client)
 
-    rv = client.post('/flags', data={'flag': 'abc'})
-    assert rv.status_code == 303
-    assert rv.headers['Location'] == 'http://localhost/submit'
-    assert b'Sorry, the flag you entered is not correct.' in client.get('/').data
-
-    rv = client.post('/flags', data={'flag': 'fleg'})
-    assert rv.status_code == 303
-    assert rv.headers['Location'] == 'http://localhost/teams/1'
-    assert b'Correct! You have earned 10 points for your team.' in client.get('/').data
-
-    rv = client.post('/flags', data={'flag': 'fleg'})
-    assert rv.status_code == 303
-    assert rv.headers['Location'] == 'http://localhost/submit'
-    assert b'You&#39;ve already entered that flag.' in client.get('/').data
+    assert_flag('abc', b'Sorry, the flag you entered is not correct.')
+    assert_flag('fleg', b'Correct! You have earned 10 points for your team.')
+    assert_flag('fleg', b'You&#39;ve already entered that flag.')
 
     rv = client.get('/')
     assert b'<td>10</td>' in rv.data
