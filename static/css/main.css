@@ -16,6 +16,12 @@ body {
   margin: 20px 0;
 }
 
+.noteams {
+  color: #95a5a6;
+  font-size: 30px;
+  margin: 50px 0 0;
+}
+
 .team-name {
   color: #3498db;
   font-weight: bold;
