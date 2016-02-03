@@ -32,6 +32,7 @@ class Flag(db.Model):
 
 class Category(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    order = db.Column(db.Integer)
     name = db.Column(db.String(20))
     levels = db.relationship('Flag', backref='category')
 
@@ -109,7 +110,7 @@ def team_page(id):
     team = Team.query.filter_by(id=id).first()
     if team is None:
         raise NotFound()
-    categories = Category.query.all()
+    categories = Category.query.order_by(Category.order.asc())
     levels = {cat.name: cat.levels for cat in categories}
     return render_template('team.html', team=team, levels=levels)
 
