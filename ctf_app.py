@@ -110,9 +110,9 @@ def team_page(id):
     team = Team.query.filter_by(id=id).first()
     if team is None:
         raise NotFound()
-    categories = Category.query.order_by(Category.order.asc())
-    levels = {cat.name: cat.levels for cat in categories}
-    return render_template('team.html', team=team, levels=levels)
+    cat_query = Category.query.order_by(Category.order.asc())
+    categories = [(cat.name, cat.levels) for cat in cat_query]
+    return render_template('team.html', team=team, categories=categories)
 
 
 @app.route('/teams', methods=['POST'])
