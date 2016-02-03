@@ -9,7 +9,7 @@
           <code class="password" data-password="{{ team.password }}">{{ '*' * team.password|length }}</code>
         </div>
         {%- endif %}
-        <h1>{{ team.name }}</h1>
+        <h1 class="team-name"><a href="{{ url_for('team_page', id=team.id) }}">{{ team.name }}</a></h1>
         <div class="points">{{ team.points }} points</div>
         {%- for category, levels in categories %}
         <div class="category">

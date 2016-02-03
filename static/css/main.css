@@ -16,6 +16,17 @@ body {
   margin: 20px 0;
 }
 
+.team-name {
+  color: #3498db;
+  font-weight: bold;
+  letter-spacing: -.5px;
+  margin: 20px 0 0;
+}
+
+.team-name > a {
+  color: inherit;
+}
+
 .password-box {
   margin-top: 25px;
   text-align: center;
@@ -26,8 +37,9 @@ body {
 }
 
 .points {
+  color: #999;
   font-size: 25px;
-  margin: 30px 0;
+  margin: 0 0 30px;
 }
 
 .category-label {
