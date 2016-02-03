@@ -16,7 +16,7 @@ app = Flask(__name__)
 db = SQLAlchemy(app)
 
 
-association_table = db.Table('association', db.Model.metadata,
+association_table = db.Table('team_flags', db.Model.metadata,
     db.Column('team_id', db.Integer, db.ForeignKey('team.id')),
     db.Column('flag_id', db.Integer, db.ForeignKey('flag.id'))
 )
