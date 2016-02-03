@@ -83,28 +83,28 @@ def home_page():
     return render_template('home.html', teams=teams)
 
 
-@app.route('/login')
+@app.route('/login/')
 def login_page():
     return render_template('login.html')
 
 
-@app.route('/about')
+@app.route('/about/')
 def about_page():
     return render_template('about.html')
 
 
-@app.route('/contact')
+@app.route('/contact/')
 def contact_page():
     return render_template('contact.html')
 
 
-@app.route('/submit')
+@app.route('/submit/')
 @require_auth
 def flag_page():
     return render_template('submit.html')
 
 
-@app.route('/teams/<int:id>')
+@app.route('/teams/<int:id>/')
 def team_page(id):
     team = Team.query.filter_by(id=id).first()
     if team is None:
