@@ -12,8 +12,17 @@ body {
   margin: 0 auto 50px;
 }
 
-.create-form > input, .existing-form > input {
+.create-form > input {
+  margin: 20px 0 0;
+}
+
+.existing-form > input {
   margin: 20px 0;
+}
+
+.pw-notice {
+  color: #777;
+  margin: 10px 0;
 }
 
 .noteams {

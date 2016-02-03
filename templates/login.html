@@ -5,6 +5,7 @@
       <h2>Create a new team</h2>
       <label for="new-name" class="sr-only">Team name</label>
       <input type="text" id="new-name" name="name" class="form-control" placeholder="Team name" required>
+      <div class="pw-notice">(A password will be generated for your team)</div>
       <button class="btn btn-lg btn-primary btn-block" type="submit">Create team</button>
     </form>
     <form class="existing-form" method="POST" action="{{ url_for('auth_team') }}">
