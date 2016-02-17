@@ -136,22 +136,36 @@ def test_flag_submission(client):
         assert rv.headers['Location'] == 'http://localhost/submit/'
         assert msg in client.get('/').data
 
-    # SHA-256 of "fleg"
-    sha = 'cc78431eedada5a45ac10eae0838b5f84e023758e9baec5ed1f58ffa3722527a'
-    cat = Category(name='Bandit')
-    fleg = Flag(hash=sha, points=10, category=cat, level=0)
-    db.session.add(cat)
-    db.session.add(fleg)
+    # SHA-256 of "fleg1" and "fleg2"
+    sha1 = '2625b4dc22b2a45b2e97dad4b015023a5edbca79672d44c962f783e3ca3cb2a4'
+    sha2 = 'b4426795bb1d1285d51c9371ff92eb048a55f5662877ca59d6cf0759c3c143da'
+    bandit = Category(name='Bandit')
+    leviathan = Category(name='Leviathan')
+    fleg1 = Flag(hash=sha1, points=10, category=bandit, level=0)
+    fleg2 = Flag(hash=sha2, points=20, category=bandit, level=1)
+    fleg3 = Flag(hash='whatever', points=10, category=leviathan, level=0)
+    db.session.add(bandit)
+    db.session.add(leviathan)
+    db.session.add(fleg1)
+    db.session.add(fleg2)
+    db.session.add(fleg3)
     db.session.commit()
-
-    rv = client.get('/')
-    assert b'<td>10</td>' not in rv.data
 
     auth(client)
 
+    rv = client.get('/')
+    assert b'<td>0</td>' in rv.data
+
+    assert_flag('fleg2', b'You must complete all previous challenges first!')
     assert_flag('abc', b'Sorry, the flag you entered is not correct.')
-    assert_flag('fleg', b'Correct! You have earned 10 points for your team.')
-    assert_flag('fleg', b'You&#39;ve already entered that flag.')
+    assert_flag('fleg1', b'Correct! You have earned 10 points for your team.')
+    assert_flag('fleg1', b'You&#39;ve already entered that flag.')
 
     rv = client.get('/')
     assert b'<td>10</td>' in rv.data
+
+    assert_flag('fleg2', b'Correct! You have earned 20 points for your team.')
+    assert_flag('fleg2', b'You&#39;ve already entered that flag.')
+
+    rv = client.get('/')
+    assert b'<td>30</td>' in rv.data

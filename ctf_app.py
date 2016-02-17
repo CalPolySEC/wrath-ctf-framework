@@ -34,6 +34,7 @@ class Flag(db.Model):
     points = db.Column(db.Integer)
     category_id = db.Column(db.Integer, db.ForeignKey('category.id'))
     level = db.Column(db.Integer)
+    teams = db.relationship('Team', secondary=association_table)
 
 
 class Category(db.Model):
@@ -181,6 +182,10 @@ def submit_flag():
         flash('Sorry, the flag you entered is not correct.', 'danger')
     elif db_flag in team.flags:
         flash('You\'ve already entered that flag.', 'warning')
+    elif db.session.query(Flag).filter(Flag.category == db_flag.category) \
+            .filter(Flag.level < db_flag.level) \
+            .filter(~Flag.teams.any(id=team.id)).count() > 0:
+        flash('You must complete all previous challenges first!', 'danger')
     else:
         team.flags.append(db_flag)
         team.points += db_flag.points
