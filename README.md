@@ -7,6 +7,7 @@ TODO
 ----
 * Statistics on how many have completed each challenge in each of the three modules
 * Consecutive challenges depend on each other
+* Time remaining
 
 Heroku
 ------
