@@ -27,5 +27,5 @@ def getwords():
 
 
 if __name__ == '__main__':
-    while true:
+    while True:
         print(getwords())
