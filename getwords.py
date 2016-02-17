@@ -1,5 +1,6 @@
 from subprocess import getoutput
 from random import randrange
+from filelock import FileLock
 
 DICT_PATH = './dict.txt'
 
@@ -11,9 +12,10 @@ DICT_LENGTH = 61973
 # don't run on OS X
 def randomize():
     out = getoutput('sort -R ' + DICT_PATH)
-    with open(DICT_PATH, 'w') as f:
-        f.write(out)
-    f.close()
+    with FileLock(DICT_PATH):
+        with open(DICT_PATH, 'w') as f:
+            f.write(out)
+        f.close()
 
 
 def getwords():
@@ -25,4 +27,5 @@ def getwords():
 
 
 if __name__ == '__main__':
-    print(getwords())
+    while true:
+        print(getwords())
