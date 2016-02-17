@@ -9,10 +9,15 @@ from random import choice
 from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError
 from werkzeug.exceptions import HTTPException, Forbidden, NotFound, InternalServerError
+import os
 import string
 
 
 app = Flask(__name__)
+
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'not secure brah')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///test.db')
+
 db = SQLAlchemy(app)
 
 
@@ -188,6 +193,4 @@ def submit_flag():
 
 
 if __name__ == '__main__':
-    app.config['SECRET_KEY'] = 'not secure brah'
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
     app.run(debug=True)
