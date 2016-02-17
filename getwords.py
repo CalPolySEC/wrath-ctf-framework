@@ -1,13 +1,12 @@
 from subprocess import getoutput
 from random import randrange
 from filelock import FileLock
+import os
 
 LOCK_PATH = '/tmp/ifixit_dict.lock'
 DICT_PATH = './dict.txt'
 
 OOPS_SEEK_TOO_FAR = 48
-
-DICT_LENGTH = 61973
 
 
 # don't run on OS X
@@ -21,7 +20,7 @@ def randomize():
 
 def getwords():
     with open(DICT_PATH, 'r') as f:
-        f.seek(randrange(0, int(DICT_LENGTH-OOPS_SEEK_TOO_FAR)))
+        f.seek(randrange(0, os.path.getsize(DICT_PATH) - OOPS_SEEK_TOO_FAR))
         out = f.readlines(OOPS_SEEK_TOO_FAR)
         out = [x.replace('\n', '') for x in out]
     return '_'.join(out[1:4])
