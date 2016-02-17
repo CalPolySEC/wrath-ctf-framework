@@ -2,6 +2,7 @@ from subprocess import getoutput
 from random import randrange
 from filelock import FileLock
 
+LOCK_PATH = '/tmp/ifixit_dict.lock'
 DICT_PATH = './dict.txt'
 
 OOPS_SEEK_TOO_FAR = 48
@@ -12,7 +13,7 @@ DICT_LENGTH = 61973
 # don't run on OS X
 def randomize():
     out = getoutput('sort -R ' + DICT_PATH)
-    with FileLock(DICT_PATH):
+    with FileLock(LOCK_PATH):
         with open(DICT_PATH, 'w') as f:
             f.write(out)
         f.close()
