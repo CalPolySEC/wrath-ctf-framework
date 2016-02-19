@@ -63,7 +63,7 @@ def create_csrf():
 def ensure_csrf(token):
     """Show 400 Bad Request for a missing/incorrect CSRF token."""
     if token != session.get('csrf_token'):
-        flash('Missing or incorrect CSRF token.')
+        flash('Missing or incorrect CSRF token.', 'danger')
         raise BadRequest()
 
 
