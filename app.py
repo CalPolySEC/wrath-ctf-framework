@@ -9,6 +9,10 @@ from sqlalchemy import func
 from werkzeug.exceptions import HTTPException, BadRequest, NotFound, InternalServerError
 from werkzeug.security import safe_str_cmp
 import os
+try:
+    from urllib.parse import urlparse
+except ImportError:
+    from urlparse import urlparse
 
 
 app = Flask(__name__, static_url_path=os.environ.get('STATIC_PREFIX', '/static'))
@@ -49,6 +53,12 @@ class Team(db.Model):
     points = db.Column(db.Integer, default=0)
     flags = db.relationship('Flag', secondary=association_table)
     last_flag = db.Column(db.DateTime, server_default=db.func.now())
+
+
+def is_safe_url(url):
+    """Determine whether a URL is safe for redirection."""
+    u = urlparse(url)
+    return u.scheme == '' and u.netloc == '' and u.path != request.path
 
 
 CSRF_BYTES = 36
@@ -94,7 +104,7 @@ def require_auth(fn):
     def inner(*args, **kwargs):
         if 'team' not in session:
             flash('You must be logged in to a team to do that.', 'danger')
-            return redirect(url_for('login_page'), code=303)
+            return redirect(url_for('login_page', next=request.path), code=303)
         return fn(*args, **kwargs)
     return inner
 
@@ -154,7 +164,11 @@ def new_team():
     db.session.commit()
     session['team'] = team.id
     flash('Team successfully created.', 'success')
-    return redirect(url_for('team_page', id=team.id), code=303)
+
+    redirect_url = request.args.get('next')
+    if not redirect_url or not is_safe_url(redirect_url):
+        redirect_url = url_for('team_page', id=team.id)
+    return redirect(redirect_url, code=303)
 
 
 @app.route('/auth_team', methods=['POST'])

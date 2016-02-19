@@ -130,7 +130,7 @@ def test_login(client):
 def test_logout_unauthed(client):
     rv = client.get('/logout/')
     assert rv.status_code == 303
-    assert rv.headers['Location'] == 'http://localhost/login/'
+    assert rv.headers['Location'] == 'http://localhost/login/?next=%2Flogout%2F'
 
 
 def test_logout_bad_token(client):
@@ -158,7 +158,7 @@ def test_logout(client):
 def test_submit_page(client):
     rv = client.get('/submit/')
     assert rv.status_code == 303
-    assert rv.headers['Location'] == 'http://localhost/login/'
+    assert rv.headers['Location'] == 'http://localhost/login/?next=%2Fsubmit%2F'
 
     auth(client)
 
