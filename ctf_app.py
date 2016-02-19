@@ -1,3 +1,4 @@
+from base64 import urlsafe_b64encode
 from datetime import datetime
 from flask import Flask, request, session, redirect, render_template, url_for,\
                   flash
@@ -5,10 +6,9 @@ from flask_sqlalchemy import SQLAlchemy
 from functools import wraps
 from getwords import getwords
 from hashlib import sha256
-from random import choice
 from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError
-from werkzeug.exceptions import HTTPException, Forbidden, NotFound, InternalServerError
+from werkzeug.exceptions import HTTPException, BadRequest, NotFound, InternalServerError
 import os
 import string
 
@@ -53,15 +53,30 @@ class Team(db.Model):
     last_flag = db.Column(db.DateTime, server_default=db.func.now())
 
 
-def random_string(size):
-    letters = string.ascii_letters + string.digits
-    return ''.join(choice(letters) for n in range(size))
+CSRF_BYTES = 36
+@app.before_request
+def create_csrf():
+    """Generate a cryptographically secure CSRF token for every session."""
+    if 'csrf_token' not in session:
+        token = urlsafe_b64encode(os.urandom(CSRF_BYTES)).decode('utf-8')
+        session['csrf_token'] = token
+
+
+def ensure_csrf(token):
+    """Show 400 Bad Request for a missing/incorrect CSRF token."""
+    if token != session.get('csrf_token'):
+        flash('Missing or incorrect CSRF token.')
+        raise BadRequest()
 
 
 @app.before_request
-def create_csrf():
-    if 'csrf_token' not in session:
-        session['csrf_token'] = random_string(32)
+def check_csrf():
+    """Enforce CSRF tokens on all POST requests.
+
+    We're assuming that no requests use PUT or DELETE methods.
+    """
+    if request.method == 'POST':
+        ensure_csrf(request.form.get('token'))
 
 
 @app.errorhandler(400)
@@ -162,11 +177,9 @@ def auth_team():
 @app.route('/logout')
 @require_auth
 def logout():
-    """Remove the team, and cycle the token."""
-    if request.args.get('token') != session['csrf_token']:
-        raise Forbidden()
-    del session['team']
-    del session['csrf_token']
+    """Clear the session, and redirect to home."""
+    ensure_csrf(request.args.get('token'))
+    session.clear()
     return redirect(url_for('home_page'), code=303)
 
 

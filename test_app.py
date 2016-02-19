@@ -11,11 +11,22 @@ def client():
     return app.test_client()
 
 
+def get_token(client):
+    rv = client.get('/login/')
+    token = rv.data.split(b'name="token" value="', 1)[1]
+    return token.split(b'"', 1)[0].decode('utf-8')
+
+
 def auth(client):
     team = Team(name='Abc', password='def')
     db.session.add(team)
     db.session.commit()
-    client.post('/auth_team', data={'name': 'abc', 'password': 'def'})
+    data = {
+        'name': 'abc',
+        'password': 'def',
+        'token': get_token(client),
+    }
+    client.post('/auth_team', data=data)
 
 
 def test_error(client):
@@ -44,9 +55,20 @@ def test_team_404(client):
         assert rv.status_code == 404
 
 
+def test_bad_csrf(client):
+    rv = client.post('/teams', data={'name': 'My team name'})
+    assert rv.status_code == 400
+    assert b'Missing or incorrect CSRF token.' in rv.data
+
+    rv = client.post('/teams', data={'name': 'My team name', 'token': 'abc'})
+    assert rv.status_code == 400
+    assert b'Missing or incorrect CSRF token.' in rv.data
+
+
 def test_new_team(client):
     rv = client.post('/teams', data={
-        'name': 'Sgt. Pepper\'s Lonely Hearts Club Band'
+        'name': 'Sgt. Pepper\'s Lonely Hearts Club Band',
+        'token': get_token(client),
     })
     assert rv.status_code == 303
     assert rv.headers['Location'] == 'http://localhost/teams/1/'
@@ -57,22 +79,30 @@ def test_new_team(client):
 
 
 def test_new_team_missing_name(client):
-    rv = client.post('/teams')
+    rv = client.post('/teams', data={'token': get_token(client)})
     assert rv.status_code == 303
     assert rv.headers['Location'] == 'http://localhost/login/'
     assert b'You must supply a team name.' in client.get('/').data
 
 
 def test_new_team_duplicate(client):
-    rv = client.post('/teams', data={'name': 'Some Team Name'})
-    rv = client.post('/teams', data={'name': 'sOmE tEaM nAme'})
+    data = {
+        'name': 'Some Team Name',
+        'token': get_token(client),
+    }
+    rv = client.post('/teams', data=data)
+    data['name'] = 'sOmE tEaM nAme'
+    rv = client.post('/teams', data=data)
     assert rv.status_code == 303
     assert rv.headers['Location'] == 'http://localhost/login/'
     assert b'That team name is taken.' in client.get('/').data
 
 
 def test_login(client):
+    token = get_token(client)
+
     def assert_bad_login(data, message):
+        data['token'] = token
         rv = client.post('/auth_team', data=data)
         assert rv.status_code == 303
         assert rv.headers['Location'] == 'http://localhost/login/'
@@ -83,12 +113,17 @@ def test_login(client):
     assert_bad_login({'username': 'abc', 'password': 'abc'},
                      b'No team exists with that name.')
 
-    client.post('/teams', data={'name': 'Abc'})
+    client.post('/teams', data={'name': 'Abc', 'token': token})
     assert_bad_login({'name': 'ABC', 'password': 'abc'},
                      b'Incorrect team password.')
 
     password = Team.query.filter_by(id=1).first().password
-    rv = client.post('/auth_team', data={'name': 'ABC', 'password': password})
+    data = {
+        'name': 'ABC',
+        'password': password,
+        'token': token,
+    }
+    rv = client.post('/auth_team', data=data)
     assert rv.headers['Location'] == 'http://localhost/teams/1/'
 
 
@@ -101,21 +136,23 @@ def test_logout_unauthed(client):
 def test_logout_bad_token(client):
     auth(client)
     rv = client.get('/logout')
-    assert rv.status_code == 403
+    assert rv.status_code == 400
+    assert b'Missing or incorrect CSRF token.' in rv.data
+
     rv = client.get('/logout?token=abc')
-    assert rv.status_code == 403
+    assert rv.status_code == 400
+    assert b'Missing or incorrect CSRF token.' in rv.data
 
 
 def test_logout(client):
     auth(client)
-
-    rv = client.get('/')
-    token = rv.data.split(b'/logout?token=', 1)[1]
-    token = token.split(b'"', 1)[0].decode('utf-8')
+    token = get_token(client)
 
     rv = client.get('/logout?token=%s' % token)
     assert rv.status_code == 303
     assert rv.headers['Location'] == 'http://localhost/'
+
+    assert get_token(client) != token
 
 
 def test_submit_page(client):
@@ -130,8 +167,10 @@ def test_submit_page(client):
 
 
 def test_flag_submission(client):
+    token = get_token(client)
+
     def assert_flag(flag, msg):
-        rv = client.post('/flags', data={'flag': flag})
+        rv = client.post('/flags', data={'flag': flag, 'token': token})
         assert rv.status_code == 303
         assert rv.headers['Location'] == 'http://localhost/submit/'
         assert msg in client.get('/').data
