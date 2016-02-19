@@ -83,7 +83,7 @@ def test_bad_csrf(client):
 
 
 def test_new_team(client):
-    rv = client.post('/teams', data={
+    rv = client.post('/teams?next=http%3A%2F%2Fexample.com', data={
         'name': 'Sgt. Pepper\'s Lonely Hearts Club Band',
         'token': get_token(client),
     })
@@ -140,8 +140,11 @@ def test_login(client):
         'password': password,
         'token': token,
     }
-    rv = client.post('/auth_team', data=data)
+    rv = client.post('/auth_team?next=http%3A%2F%2Fexample.com', data=data)
     assert rv.headers['Location'] == 'http://localhost/teams/1/'
+
+    rv = client.post('/auth_team?next=%2F', data=data)
+    assert rv.headers['Location'] == 'http://localhost/'
 
 
 def test_logout_unauthed(client):
