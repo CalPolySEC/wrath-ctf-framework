@@ -128,18 +128,18 @@ def test_login(client):
 
 
 def test_logout_unauthed(client):
-    rv = client.get('/logout')
+    rv = client.get('/logout/')
     assert rv.status_code == 303
     assert rv.headers['Location'] == 'http://localhost/login/'
 
 
 def test_logout_bad_token(client):
     auth(client)
-    rv = client.get('/logout')
+    rv = client.get('/logout/')
     assert rv.status_code == 400
     assert b'Missing or incorrect CSRF token.' in rv.data
 
-    rv = client.get('/logout?token=abc')
+    rv = client.get('/logout/?token=abc')
     assert rv.status_code == 400
     assert b'Missing or incorrect CSRF token.' in rv.data
 
@@ -148,7 +148,7 @@ def test_logout(client):
     auth(client)
     token = get_token(client)
 
-    rv = client.get('/logout?token=%s' % token)
+    rv = client.get('/logout/?token=%s' % token)
     assert rv.status_code == 303
     assert rv.headers['Location'] == 'http://localhost/'
 

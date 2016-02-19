@@ -172,10 +172,14 @@ def auth_team():
         return redirect(url_for('login_page'), code=303)
 
     session['team'] = team.id
-    return redirect(url_for('team_page', id=team.id), code=303)
+
+    redirect_url = request.args.get('next')
+    if not redirect_url or not is_safe_url(redirect_url):
+        redirect_url = url_for('team_page', id=team.id)
+    return redirect(redirect_url, code=303)
 
 
-@app.route('/logout')
+@app.route('/logout/')
 @require_auth
 def logout():
     """Clear the session, and redirect to home."""
