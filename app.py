@@ -92,6 +92,7 @@ def handle_error(exc):
 
 
 def require_auth(fn):
+    """Redirect to the login page if the user is not authenticated."""
     @wraps(fn)
     def inner(*args, **kwargs):
         if 'team' not in session:
@@ -130,6 +131,7 @@ def flag_page():
 
 @app.route('/teams/<int:id>/')
 def team_page(id):
+    """Get the page for a specific team."""
     team = Team.query.filter_by(id=id).first()
     if team is None:
         raise NotFound()
@@ -160,6 +162,7 @@ def new_team():
 
 @app.route('/auth_team', methods=['POST'])
 def auth_team():
+    """Log into a team with its password."""
     name = request.form.get('name', '')
     password = request.form.get('password', '')
     team = Team.query.filter(func.lower(Team.name) == name.lower()).first()
@@ -188,6 +191,7 @@ def logout():
 @app.route('/flags', methods=['POST'])
 @require_auth
 def submit_flag():
+    """Attempt to submit a flag, and redirect to the flag page."""
     flag = request.form.get('flag', '')
     flag_hash = sha256(flag.encode('utf-8')).hexdigest()
     db_flag = Flag.query.filter_by(hash=flag_hash).first()
