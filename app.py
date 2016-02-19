@@ -172,6 +172,7 @@ def auth_team():
         return redirect(url_for('login_page'), code=303)
 
     session['team'] = team.id
+    flash('You are now logged in as %s.' % team.name, 'success')
 
     redirect_url = request.args.get('next')
     if not redirect_url or not is_safe_url(redirect_url):
@@ -212,7 +213,7 @@ def submit_flag():
         team.last_flag = func.now()
         db.session.add(team)
         db.session.commit()
-        flash('Correct! You have earned {0} points for your team.'
+        flash('Correct! You have earned {0:d} points for your team.'
               .format(db_flag.points), 'success')
 
     return redirect(url_for('flag_page'), code=303)
