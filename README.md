@@ -8,6 +8,25 @@ TODO
 * Statistics on how many have completed each challenge in each of the three modules
 * Time remaining
 
+Development Environment
+-----------------------
+
+Here's how to get a local copy up and running:
+
+    virtualenv venv
+    source venv/bin/activate
+    pip install -r requirements.txt
+    python scripts/build_db.py
+
+And to run the app:
+
+    python ctf_app.py
+
+By default, this will be available at http://localhost:5000. To run on a
+different port, use:
+
+    PORT=8080 python ctf_app.py
+
 Heroku
 ------
 
