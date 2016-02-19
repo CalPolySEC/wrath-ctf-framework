@@ -1,2 +1,2 @@
 test:
-	py.test -vv --cov=ctf_app --cov-report=term-missing
+	py.test -vv --cov=app --cov-report=term-missing
