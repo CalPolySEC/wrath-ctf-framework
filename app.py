@@ -181,6 +181,7 @@ def logout():
     """Clear the session, and redirect to home."""
     ensure_csrf(request.args.get('token'))
     session.clear()
+    flash('You have been logged out.', 'info')
     return redirect(url_for('home_page'), code=303)
 
 
