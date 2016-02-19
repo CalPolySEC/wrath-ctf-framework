@@ -9,6 +9,7 @@ from hashlib import sha256
 from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError
 from werkzeug.exceptions import HTTPException, BadRequest, NotFound, InternalServerError
+from werkzeug.security import safe_str_cmp
 import os
 import string
 
@@ -166,7 +167,7 @@ def auth_team():
     if team is None:
         flash('No team exists with that name.', 'danger')
         return redirect(url_for('login_page'), code=303)
-    if password != team.password:
+    if not safe_str_cmp(password, team.password):
         flash('Incorrect team password.', 'danger')
         return redirect(url_for('login_page'), code=303)
 
