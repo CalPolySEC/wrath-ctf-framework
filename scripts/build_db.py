@@ -4,7 +4,7 @@ import hashlib
 # This here is a hack
 import sys
 sys.path.extend('..')
-from ctf_app import app, db, Category, Flag, Team
+from app import app, db, Category, Flag, Team
 
 def main():
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'

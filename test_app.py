@@ -1,4 +1,4 @@
-from ctf_app import app, db, Team, Flag, Category
+from app import app, db, Team, Flag, Category
 import pytest
 import tempfile
 
