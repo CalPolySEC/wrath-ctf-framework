@@ -1,4 +1,4 @@
-from app import app, db, Team, Flag, Category
+from app import app, db, Team, Flag, Category, is_safe_url
 import pytest
 import tempfile
 
@@ -27,6 +27,23 @@ def auth(client):
         'token': get_token(client),
     }
     client.post('/auth_team', data=data)
+
+
+def test_is_safe_url():
+    with app.test_request_context('/url'):
+        assert is_safe_url('') == True
+        assert is_safe_url('/') == True
+        assert is_safe_url('/abc') == True
+        assert is_safe_url('/url') == False
+        assert is_safe_url('//example.com') == False
+        assert is_safe_url('http://abc') == False
+        assert is_safe_url('http://example.com') == False
+        assert is_safe_url('http://example.com/abc') == False
+        assert is_safe_url('http://localhost:1234/abc') == False
+        assert is_safe_url('http://localhost/') == False
+        assert is_safe_url('http://localhost') == False
+        assert is_safe_url('ftp://localhost/abc') == False
+        assert is_safe_url('http://localhost/abc') == False
 
 
 def test_error(client):
