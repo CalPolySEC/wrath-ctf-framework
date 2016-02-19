@@ -20,12 +20,12 @@ Here's how to get a local copy up and running:
 
 And to run the app:
 
-    python ctf_app.py
+    python app.py
 
 By default, this will be available at http://localhost:5000. To run on a
 different port, use:
 
-    PORT=8080 python ctf_app.py
+    PORT=8080 python app.py
 
 Heroku
 ------
