@@ -1,5 +1,4 @@
 from base64 import urlsafe_b64encode
-from datetime import datetime
 from flask import Flask, request, session, redirect, render_template, url_for,\
                   flash
 from flask_sqlalchemy import SQLAlchemy
@@ -208,7 +207,7 @@ def submit_flag():
     else:
         team.flags.append(db_flag)
         team.points += db_flag.points
-        team.last_flag = datetime.now()
+        team.last_flag = func.now()
         db.session.add(team)
         db.session.commit()
         flash('Correct! You have earned {0} points for your team.'
