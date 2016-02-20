@@ -139,9 +139,7 @@ def flag_page():
 @app.route('/teams/<int:id>/')
 def team_page(id):
     """Get the page for a specific team."""
-    team = Team.query.filter_by(id=id).first()
-    if team is None:
-        raise NotFound()
+    team = Team.query.filter_by(id=id).first_or_404()
     cat_query = Category.query.order_by(Category.order.asc())
     categories = [(cat.name, cat.levels) for cat in cat_query]
     return render_template('team.html', team=team, categories=categories)
