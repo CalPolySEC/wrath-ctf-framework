@@ -5,4 +5,5 @@ __pycache__
 venv
 dict.txt
 backup.txt
+*_passwords.txt
 test.db
