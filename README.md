@@ -3,10 +3,11 @@ iFixit CTF
 
 This simple flask webapp takes password submission from teams, tallies score totals, and presents a leaderboard
 
-TODO
+Todo
 ----
 * Statistics on how many have completed each challenge in each of the three modules
-* Time remaining
+* Time remaining til CTF end (close challenges)
+* Genericize (make is plug-n-play-able for any ctf with a simple config file, json, or whatever)
 
 Development Environment
 -----------------------
