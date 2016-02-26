@@ -1,0 +1,4 @@
+Host ctf
+    Hostname 45.55.30.133
+    User root
+    Port 22
