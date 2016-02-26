@@ -2,6 +2,7 @@
 "wargame": "Bandit",
 "PointsByLevel": 
    {
+      "0":10,
       "1":10,
       "2":12,
       "3":14,
