@@ -60,9 +60,8 @@ def test_error(client):
 
 
 def test_static_pages(client):
-    for url in ('/login/', '/about/', '/contact/'):
-        rv = client.get(url)
-        assert rv.status_code == 200
+    rv = client.get('/login/')
+    assert rv.status_code == 200
 
 
 def test_team_404(client):

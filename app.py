@@ -120,16 +120,6 @@ def login_page():
     return render_template('login.html')
 
 
-@app.route('/about/')
-def about_page():
-    return render_template('about.html')
-
-
-@app.route('/contact/')
-def contact_page():
-    return render_template('contact.html')
-
-
 @app.route('/submit/')
 @require_auth
 def flag_page():

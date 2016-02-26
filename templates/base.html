@@ -30,8 +30,6 @@
       <div id="navbar" class="navbar-collapse collapse">
         <ul class="nav navbar-nav">
           <li><a href="{{ url_for('home_page') }}">Leaderboard</a></li>
-          <li><a href="{{ url_for('about_page') }}">About</a></li>
-          <li><a href="{{ url_for('contact_page') }}">Contact</a></li>
         </ul>
         <ul class="nav navbar-nav navbar-right">
           {% if 'team' in session -%}
