@@ -54,6 +54,7 @@ class Category(db.Model):
     order = db.Column(db.Integer)
     name = db.Column(db.String(20))
     levels = db.relationship('Level', backref='category')
+    enforce = db.Column(db.Boolean())
 
 
 class Team(db.Model):
@@ -225,7 +226,8 @@ def submit_flag():
         flash('Sorry, the flag you entered is not correct.', 'danger')
     elif db_flag.level in team.levels:
         flash('You\'ve already entered that flag.', 'warning')
-    elif db.session.query(Level).filter(Level.category == db_flag.level.category) \
+    elif db_flag.level.category.enforce and db.session.query(Level) \
+            .filter(Level.category == db_flag.level.category) \
             .filter(Level.level < db_flag.level.level) \
             .filter(~Level.teams.any(id=team.id)).count() > 0:
         flash('You must complete all previous challenges first!', 'danger')

@@ -209,8 +209,8 @@ def test_flag_submission(client):
     # SHA-256 of "fleg1" and "fleg2"
     sha1 = '2625b4dc22b2a45b2e97dad4b015023a5edbca79672d44c962f783e3ca3cb2a4'
     sha2 = 'b4426795bb1d1285d51c9371ff92eb048a55f5662877ca59d6cf0759c3c143da'
-    bandit = Category(name='Bandit')
-    leviathan = Category(name='Leviathan')
+    bandit = Category(name='Bandit', enforce=True)
+    leviathan = Category(name='Leviathan', enforce=True)
     level1 = Level(points=10, category=bandit, level=0)
     level2 = Level(points=20, category=bandit, level=1)
     level3 = Level(points=10, category=leviathan, level=0)
