@@ -32,7 +32,6 @@ def main(argv):
         cat = Category(name=wargame, order=int(argv[1]))
         db.session.add(cat)
         for level, flag_hash in enumerate(passwords):
-            print(level, points[level], flag_hash)
             flag = Flag(hash=flag_hash, level=level, category=cat, points=points[level][1])
             db.session.add(flag)
         db.session.commit()
