@@ -4,7 +4,6 @@ from Crypto.Cipher import AES
 import hashlib
 import json
 import subprocess
-
 # This here is a hack
 import sys
 sys.path.extend('..')
