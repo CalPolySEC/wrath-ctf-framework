@@ -185,6 +185,14 @@ def test_submit_page(client):
     assert rv.status_code == 200
 
 
+def test_justice(client):
+    auth(client)
+    token = get_token(client)
+    rv = client.post('/flags', data={'flag': 'V375BrzPaT', 'token': token})
+    assert rv.status_code == 303
+    assert 'youtube.com' in rv.headers['Location']
+
+
 def test_flag_submission(client):
     token = get_token(client)
 
