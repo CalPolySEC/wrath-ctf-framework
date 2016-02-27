@@ -192,6 +192,10 @@ def test_justice(client):
     assert rv.status_code == 303
     assert 'youtube.com' in rv.headers['Location']
 
+    rv = client.get('/passwords.zip')
+    assert rv.status_code == 303
+    assert 'youtube.com' in rv.headers['Location']
+
 
 def test_flag_submission(client):
     token = get_token(client)

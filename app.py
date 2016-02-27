@@ -192,6 +192,11 @@ def logout():
     return redirect(url_for('home_page'), code=303)
 
 
+@app.route('/passwords.zip')
+def snoopin():
+    return redirect('https://www.youtube.com/watch?v=dQw4w9WgXcQ', code=303)
+
+
 @app.route('/flags', methods=['POST'])
 @require_auth
 def submit_flag():
@@ -200,7 +205,7 @@ def submit_flag():
 
     # Deliver swift justice
     if flag == 'V375BrzPaT':
-        return redirect('https://www.youtube.com/watch?v=dQw4w9WgXcQ', code=303)
+        return snoopin()
 
     flag_hash = sha256(flag.encode('utf-8')).hexdigest()
     db_flag = Flag.query.filter_by(hash=flag_hash).first()
