@@ -185,6 +185,7 @@ def auth_team():
         return redirect(url_for('login_page'), code=303)
 
     session['team'] = team.id
+    session.permanent = True
     flash('You are now logged in as %s.' % team.name, 'success')
 
     redirect_url = request.args.get('next')
