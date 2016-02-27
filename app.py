@@ -23,19 +23,29 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
+@app.before_first_request
+def create_db():
+    db.create_all()
 
-association_table = db.Table('team_flags', db.Model.metadata,
+
+association_table = db.Table('team_levels', db.Model.metadata,
     db.Column('team_id', db.Integer, db.ForeignKey('team.id')),
-    db.Column('flag_id', db.Integer, db.ForeignKey('flag.id'))
+    db.Column('level_id', db.Integer, db.ForeignKey('level.id'))
 )
 
 
 class Flag(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     hash = db.Column(db.String(64))
+    level_id = db.Column(db.Integer, db.ForeignKey('level.id'))
+    level = db.relationship("Level")
+
+
+class Level(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
     points = db.Column(db.Integer)
-    category_id = db.Column(db.Integer, db.ForeignKey('category.id'))
     level = db.Column(db.Integer)
+    category_id = db.Column(db.Integer, db.ForeignKey('category.id'))
     teams = db.relationship('Team', secondary=association_table)
 
 
@@ -43,7 +53,7 @@ class Category(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     order = db.Column(db.Integer)
     name = db.Column(db.String(20))
-    levels = db.relationship('Flag', backref='category')
+    levels = db.relationship('Level', backref='category')
 
 
 class Team(db.Model):
@@ -51,7 +61,7 @@ class Team(db.Model):
     name = db.Column(db.String(128), unique=True)
     password = db.Column(db.String(128))
     points = db.Column(db.Integer, default=0)
-    flags = db.relationship('Flag', secondary=association_table)
+    levels = db.relationship('Level', secondary=association_table)
     last_flag = db.Column(db.DateTime, server_default=db.func.now())
 
 
@@ -213,20 +223,20 @@ def submit_flag():
 
     if db_flag is None:
         flash('Sorry, the flag you entered is not correct.', 'danger')
-    elif db_flag in team.flags:
+    elif db_flag.level in team.levels:
         flash('You\'ve already entered that flag.', 'warning')
-    elif db.session.query(Flag).filter(Flag.category == db_flag.category) \
-            .filter(Flag.level < db_flag.level) \
-            .filter(~Flag.teams.any(id=team.id)).count() > 0:
+    elif db.session.query(Level).filter(Level.category == db_flag.level.category) \
+            .filter(Level.level < db_flag.level.level) \
+            .filter(~Level.teams.any(id=team.id)).count() > 0:
         flash('You must complete all previous challenges first!', 'danger')
     else:
-        team.flags.append(db_flag)
-        team.points += db_flag.points
+        team.levels.append(db_flag.level)
+        team.points += db_flag.level.points
         team.last_flag = func.now()
         db.session.add(team)
         db.session.commit()
         flash('Correct! You have earned {0:d} points for your team.'
-              .format(db_flag.points), 'success')
+              .format(db_flag.level.points), 'success')
 
     return redirect(url_for('flag_page'), code=303)
 

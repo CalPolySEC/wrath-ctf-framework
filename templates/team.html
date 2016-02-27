@@ -16,7 +16,7 @@
           <div class="category-label">{{ category }}</div>
           <div class="levels">
           {%- for level in levels -%}
-          <div class="level{% if level in team.flags %} completed{% endif %}" title="{{ level.points }} points" data-placement="top"></div>
+          <div class="level{% if level in team.levels %} completed{% endif %}" title="{{ level.points }} points" data-placement="top"></div>
           {%- endfor %}
           </div>
         </div>

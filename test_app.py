@@ -1,4 +1,4 @@
-from app import app, db, Team, Flag, Category, is_safe_url
+from app import app, db, Team, Flag, Level, Category, is_safe_url
 import pytest
 import tempfile
 
@@ -211,9 +211,12 @@ def test_flag_submission(client):
     sha2 = 'b4426795bb1d1285d51c9371ff92eb048a55f5662877ca59d6cf0759c3c143da'
     bandit = Category(name='Bandit')
     leviathan = Category(name='Leviathan')
-    fleg1 = Flag(hash=sha1, points=10, category=bandit, level=0)
-    fleg2 = Flag(hash=sha2, points=20, category=bandit, level=1)
-    fleg3 = Flag(hash='whatever', points=10, category=leviathan, level=0)
+    level1 = Level(points=10, category=bandit, level=0)
+    level2 = Level(points=20, category=bandit, level=1)
+    level3 = Level(points=10, category=leviathan, level=0)
+    fleg1 = Flag(hash=sha1, level=level1)
+    fleg2 = Flag(hash=sha2, level=level2)
+    fleg3 = Flag(hash='whatever', level=level3)
     db.session.add(bandit)
     db.session.add(leviathan)
     db.session.add(fleg1)
