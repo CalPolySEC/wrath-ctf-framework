@@ -9,8 +9,10 @@ DICT_PATH = './dict.txt'
 OOPS_SEEK_TOO_FAR = 48
 
 
-# don't run on OS X
 def randomize():
+    if getoutput('uname') != "Linux" and 'n' in input("Your OS might not support `sort -R`, proceed? [Yn] "):
+        print("Exiting")
+        return
     out = getoutput('sort -R ' + DICT_PATH)
     with FileLock(LOCK_PATH):
         with open(DICT_PATH, 'w') as f:
@@ -27,5 +29,5 @@ def getwords():
 
 
 if __name__ == '__main__':
-    while True:
-        print(getwords())
+    randomize()
+    print(getwords())
