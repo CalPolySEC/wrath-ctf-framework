@@ -1,6 +1,9 @@
 {% extends 'base.html' %}
 
 {% block body %}
+    <div class="center">
+      <p><b>Note:</b> The flag for a level is the password for that level (starting with <code>bandit0</code>)</p>
+    </div>
     <form class="flag-submission" method="POST" action="{{ url_for('submit_flag') }}">
       <input type="hidden" name="token" value="{{ session['csrf_token'] }}">
       <div class="input-group input-group-lg">
