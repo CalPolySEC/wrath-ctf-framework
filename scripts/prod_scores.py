@@ -17,7 +17,7 @@ def load_passwords(in_file):
         for i, p in enumerate(proc.stdout):
             p = p.strip()
             if b' ' in p:
-                lev, fleg = p.split(' ', 1)
+                lev, fleg = p.split(b' ', 1)
             else:
                 lev = i
                 fleg = p
