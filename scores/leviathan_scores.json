@@ -1,6 +1,7 @@
 {
 "wargame": "Leviathan",
-"PointsByLevel": 
+"enforce_order": true,
+"PointsByLevel":
    {
       "0":16,
       "1":64,
@@ -12,5 +13,3 @@
       "7":512
    }
 }
-
-

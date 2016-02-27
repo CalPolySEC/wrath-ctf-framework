@@ -1,6 +1,7 @@
 {
 "wargame": "Bandit",
-"PointsByLevel": 
+"enforce_order": true,
+"PointsByLevel":
    {
       "0":10,
       "1":10,
@@ -31,5 +32,3 @@
       "26":512
    }
 }
-
-
