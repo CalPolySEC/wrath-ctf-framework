@@ -219,6 +219,8 @@ def submit_flag():
     if flag == 'V375BrzPaT':
         return snoopin()
 
+    flash('The competition has ended, sorry.', 'danger')
+
     flag_hash = sha256(flag.encode('utf-8')).hexdigest()
     db_flag = Flag.query.filter_by(hash=flag_hash).first()
     team = Team.query.filter_by(id=session['team']).first()
