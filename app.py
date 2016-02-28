@@ -1,4 +1,5 @@
 from base64 import urlsafe_b64encode
+from datetime import datetime
 from flask import Flask, request, session, redirect, render_template, url_for,\
                   flash
 from flask_sqlalchemy import SQLAlchemy
@@ -17,6 +18,7 @@ except ImportError:
 
 app = Flask(__name__, static_url_path=os.environ.get('STATIC_PREFIX', '/static'))
 
+app.config['END_TIME_UTC'] = os.environ.get('END_TIME_UTC')
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'not secure brah')
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///test.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -219,8 +221,10 @@ def submit_flag():
     if flag == 'V375BrzPaT':
         return snoopin()
 
-    flash('The competition has ended, sorry.', 'danger')
-    return redirect(url_for('flag_page'), code=303)
+    end_time = app.config['END_TIME_UTC']
+    if end_time and datetime.utcnow() > datetime.strptime(end_time, '%Y-%m-%dT%H:%M:%S.%fZ'):
+        flash('The competition has ended, sorry.', 'danger')
+        return redirect(url_for('flag_page'), code=303)
 
     flag_hash = sha256(flag.encode('utf-8')).hexdigest()
     db_flag = Flag.query.filter_by(hash=flag_hash).first()
