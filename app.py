@@ -220,6 +220,7 @@ def submit_flag():
         return snoopin()
 
     flash('The competition has ended, sorry.', 'danger')
+    return redirect(url_for('flag_page'), code=303)
 
     flag_hash = sha256(flag.encode('utf-8')).hexdigest()
     db_flag = Flag.query.filter_by(hash=flag_hash).first()
