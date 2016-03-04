@@ -14,7 +14,7 @@ Todo
 Adding Challenges
 -----------------
 
-**We need a single JSON or XML file which can be parsed, which sets up an entire CTF**
+**We need a single JSON file which can be parsed, which sets up an entire CTF**
 
 It needs to contain
 * CTF name
