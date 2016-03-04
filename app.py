@@ -95,6 +95,8 @@ def check_csrf():
     """Enforce CSRF tokens on all POST requests.
 
     We're assuming that no requests use PUT or DELETE methods.
+
+    TODO: wtf
     """
     if request.method == 'POST':
         ensure_csrf(request.form.get('token'))
