@@ -40,13 +40,3 @@ By default, this will be available at http://localhost:5000. To run on a
 different port, use:
 
     PORT=8080 python app.py
-
-Heroku
-------
-
-The following environment variables are used for configuration:
-
-* ``DATABASE_URL`` - Heroku should set this automatically
-* ``PORT`` - this should also be automatic
-* ``SECRET_KEY`` - something unique
-* ``STATIC_PREFIX`` - empty string to serve on ``/``
