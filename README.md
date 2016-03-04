@@ -6,8 +6,19 @@ This simple flask webapp takes password submission from teams, tallies score tot
 Todo
 ----
 * Statistics on how many have completed each challenge in each of the three modules
-* Time remaining til CTF end (close challenges)
+* Time remaining til CTF end (auto-close challenges)
 * Genericize (make is plug-n-play-able for any ctf with a simple config file, json, or whatever)
+
+Adding Challenges
+-----------------
+
+**We need a single JSON or XML file which can be parsed, which sets up an entire CTF**
+
+It needs to contain
+* CTF name
+* Time+date open and close
+* Categories (name, challenges)
+* Challenges (name, description/hint, points, prerequisites)
 
 Development Environment
 -----------------------
