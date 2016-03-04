@@ -10,6 +10,7 @@ Todo
 * Statistics on how many have completed each challenge in each of the three modules
 * Time remaining til CTF end (auto-close challenges)
 * Genericize (make is plug-n-play-able for any ctf with a simple config file, json, or whatever)
+* We need a Jason API
 
 Adding Challenges
 -----------------
@@ -40,13 +41,3 @@ By default, this will be available at http://localhost:5000. To run on a
 different port, use:
 
     PORT=8080 python app.py
-
-Heroku
-------
-
-The following environment variables are used for configuration:
-
-* ``DATABASE_URL`` - Heroku should set this automatically
-* ``PORT`` - this should also be automatic
-* ``SECRET_KEY`` - something unique
-* ``STATIC_PREFIX`` - empty string to serve on ``/``
