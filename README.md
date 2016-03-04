@@ -1,5 +1,7 @@
-iFixit CTF
-==========
+WRATH CTF Framework
+===================
+
+**What? Really? Another Tiny Homebrewed CTF Framework?**
 
 This simple flask webapp takes password submission from teams, tallies score totals, and presents a leaderboard
 
