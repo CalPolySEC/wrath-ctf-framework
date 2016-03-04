@@ -6,6 +6,7 @@ import os
 LOCK_PATH = '/tmp/wordlist_dict.lock'
 DICT_PATH = './dict.txt'
 
+# Magic numbers?
 OOPS_SEEK_TOO_FAR = 48
 
 
