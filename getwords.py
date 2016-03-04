@@ -3,7 +3,7 @@ from random import randrange
 from filelock import FileLock
 import os
 
-LOCK_PATH = '/tmp/ifixit_dict.lock'
+LOCK_PATH = '/tmp/wordlist_dict.lock'
 DICT_PATH = './dict.txt'
 
 OOPS_SEEK_TOO_FAR = 48
