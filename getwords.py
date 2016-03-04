@@ -10,7 +10,7 @@ OOPS_SEEK_TOO_FAR = 48
 
 
 def randomize():
-    if getoutput('uname') != "Linux" and 'n' in input("Your OS might not support `sort -R`, proceed? [Yn] "):
+    if getoutput('uname') != "Linux" and 'n' in input("Your OS might not support `sort -R`, proceed? [Yn] ").lower():
         print("Exiting")
         return
     out = getoutput('sort -R ' + DICT_PATH)
