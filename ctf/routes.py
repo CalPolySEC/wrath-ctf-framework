@@ -3,12 +3,12 @@ from datetime import datetime
 from flask import Blueprint, current_app, request, session, redirect, render_template, url_for,\
                   flash
 from functools import wraps
-from getwords import getwords
 from hashlib import sha256
 from sqlalchemy import func
 from werkzeug.exceptions import HTTPException, BadRequest, NotFound, InternalServerError
 from werkzeug.security import safe_str_cmp
 from .models import db, Team, Flag, Level, Category
+from .getwords import getwords
 import os
 try:
     from urllib.parse import urlparse
