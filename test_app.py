@@ -1,4 +1,4 @@
-from app import app, db, Team, Flag, Level, Category, is_safe_url
+from ctf.routes import app, db, Team, Flag, Level, Category, is_safe_url
 import pytest
 import tempfile
 
