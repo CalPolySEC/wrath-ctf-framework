@@ -74,6 +74,12 @@ def is_safe_url(url):
     return u.scheme == '' and u.netloc == '' and u.path != request.path
 
 
+@app.after_request
+def snoop_header(response):
+    response.headers['X-Snoop-Options'] = 'nosnoop'
+    return response
+
+
 CSRF_BYTES = 36
 @app.before_request
 def create_csrf():
