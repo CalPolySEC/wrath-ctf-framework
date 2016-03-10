@@ -4,7 +4,7 @@
     <div class="center">
       <p><b>Note:</b> The flag for a level is the password for that level (eg. <code>bandit0</code> or <code>leviathan0</code>)</p>
     </div>
-    <form class="flag-submission" method="POST" action="{{ url_for('submit_flag') }}">
+    <form class="flag-submission" method="POST" action="{{ url_for('.submit_flag') }}">
       <input type="hidden" name="token" value="{{ session['csrf_token'] }}">
       <div class="input-group input-group-lg">
         <input type="text" name="flag" class="form-control" placeholder="Flag" required autofocus>

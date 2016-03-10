@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block body %}
-    <form class="create-form" method="POST" action="{{ url_for('new_team', next=request.args.get('next')) }}">
+    <form class="create-form" method="POST" action="{{ url_for('.new_team', next=request.args.get('next')) }}">
       <input type="hidden" name="token" value="{{ session['csrf_token'] }}">
       <h2>Create a new team</h2>
       <label for="new-name" class="sr-only">Team name</label>
@@ -9,7 +9,7 @@
       <div class="pw-notice">(A password will be generated for your team)</div>
       <button class="btn btn-lg btn-primary btn-block" type="submit">Create team</button>
     </form>
-    <form class="existing-form" method="POST" action="{{ url_for('auth_team', next=request.args.get('next')) }}">
+    <form class="existing-form" method="POST" action="{{ url_for('.auth_team', next=request.args.get('next')) }}">
       <input type="hidden" name="token" value="{{ session['csrf_token'] }}">
       <h2>Join an existing team</h2>
       <label for="existing-name" class="sr-only">Team name</label>

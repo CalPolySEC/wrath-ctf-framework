@@ -25,19 +25,19 @@
           <span class="icon-bar"></span>
           <span class="icon-bar"></span>
         </button>
-        <a class="navbar-brand" href="{{ url_for('home_page') }}">White Hat CTF</a>
+        <a class="navbar-brand" href="{{ url_for('.home_page') }}">White Hat CTF</a>
       </div>
       <div id="navbar" class="navbar-collapse collapse">
         <ul class="nav navbar-nav">
-          <li><a href="{{ url_for('home_page') }}">Leaderboard</a></li>
+          <li><a href="{{ url_for('.home_page') }}">Leaderboard</a></li>
         </ul>
         <ul class="nav navbar-nav navbar-right">
           {% if 'team' in session -%}
-          <li><a href="{{ url_for('team_page', id=session['team']) }}">My Team</a></li>
-          <li><a href="{{ url_for('flag_page') }}">Submit a Flag</a></li>
-          <li><a rel="nofollow" href="{{ url_for('logout', token=session['csrf_token']) }}">Logout</a></li>
+          <li><a href="{{ url_for('.team_page', id=session['team']) }}">My Team</a></li>
+          <li><a href="{{ url_for('.flag_page') }}">Submit a Flag</a></li>
+          <li><a rel="nofollow" href="{{ url_for('.logout', token=session['csrf_token']) }}">Logout</a></li>
           {% else -%}
-          <li><a href="{{ url_for('login_page') }}">Create/Join Team</a></li>
+          <li><a href="{{ url_for('.login_page') }}">Create/Join Team</a></li>
           {% endif -%}
         </ul>
       </div>

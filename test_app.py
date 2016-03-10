@@ -1,14 +1,22 @@
-from ctf.routes import app, db, Team, Flag, Level, Category, is_safe_url
+from ctf.app import create_app
+from ctf.models import db, Team, Flag, Level, Category
+from ctf.routes import is_safe_url
+import os
 import pytest
 import tempfile
 
 @pytest.fixture
-def client():
-    app.config['DEBUG'] = True
-    app.config['SECRET_KEY'] = 'my secret key'
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///%s' % tempfile.mktemp()
-    db.create_all()
-    return app.test_client()
+def app():
+    os.environ['DATABASE_URL'] = 'sqlite:///%s' % tempfile.mktemp()
+    app = create_app()
+    app.debug = True
+    return app
+
+
+@pytest.fixture
+def client(app):
+    with app.test_client() as client:
+        return client
 
 
 def get_token(client):
@@ -29,7 +37,7 @@ def auth(client):
     client.post('/auth_team', data=data)
 
 
-def test_is_safe_url():
+def test_is_safe_url(app):
     with app.test_request_context('/url'):
         assert is_safe_url('') == True
         assert is_safe_url('/') == True
@@ -46,17 +54,18 @@ def test_is_safe_url():
         assert is_safe_url('http://localhost/abc') == False
 
 
-def test_error(client):
+def test_error(app):
     @app.route('/internal')
     def cause_a_problem():
         1 / 0
 
-    app.config['DEBUG'] = False
+    app.debug = False
 
-    for url, code in (('/asdf', 404), ('/teams', 405), ('/internal', 500)):
-        rv = client.get(url)
-        assert b'https://http.cat/%d' % code in rv.data
-        assert rv.status_code == code
+    with app.test_client() as client:
+        for url, code in (('/asdf', 404), ('/teams', 405), ('/internal', 500)):
+            rv = client.get(url)
+            assert b'https://http.cat/%d' % code in rv.data
+            assert rv.status_code == code
 
 
 def test_static_pages(client):
