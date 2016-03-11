@@ -1,12 +1,14 @@
 from base64 import urlsafe_b64encode
 from datetime import datetime
-from flask import Blueprint, current_app, request, session, redirect, render_template, url_for,\
-                  flash
+from flask import Blueprint, current_app, request, session, abort, redirect, \
+                  render_template, url_for, flash
+from flask.ext.wtf.csrf import validate_csrf
 from functools import wraps
 from hashlib import sha256
 from sqlalchemy import func
 from werkzeug.exceptions import HTTPException, BadRequest, NotFound, InternalServerError
 from werkzeug.security import safe_str_cmp
+from .forms import NewTeamForm, LoginForm
 from .models import db, Team, Flag, Level, Category
 from .getwords import getwords
 import os
@@ -31,35 +33,6 @@ def snoop_header(response):
     return response
 
 
-CSRF_BYTES = 36
-@bp.before_request
-def create_csrf():
-    """Generate a cryptographically secure CSRF token for every session."""
-    if 'csrf_token' not in session:
-        token = urlsafe_b64encode(os.urandom(CSRF_BYTES)).decode('utf-8')
-        session['csrf_token'] = token
-
-
-def ensure_csrf(token):
-    """Show 400 Bad Request for a missing/incorrect CSRF token."""
-    if token != session.get('csrf_token'):
-        flash('Missing or incorrect CSRF token.', 'danger')
-        raise BadRequest()
-
-
-@bp.before_request
-def check_csrf():
-    """Enforce CSRF tokens on all POST requests.
-
-    We're assuming that no requests use PUT or DELETE methods.
-
-    TODO: wtf
-    """
-    if request.method == 'POST':
-        ensure_csrf(request.form.get('token'))
-
-
-
 def require_auth(fn):
     """Redirect to the login page if the user is not authenticated."""
     @wraps(fn)
@@ -77,11 +50,6 @@ def home_page():
     return render_template('home.html', teams=teams)
 
 
-@bp.route('/login/')
-def login_page():
-    return render_template('login.html')
-
-
 @bp.route('/submit/')
 @require_auth
 def flag_page():
@@ -97,59 +65,58 @@ def team_page(id):
     return render_template('team.html', team=team, categories=categories)
 
 
-@bp.route('/teams', methods=['POST'])
-def new_team():
-    """Create a new team, with a generated password."""
-    name = request.form.get('name', '')
-    if not name:
-        flash('You must supply a team name.', 'danger')
-        return redirect(url_for('.login_page'), code=303)
-    if Team.query.filter(func.lower(Team.name) == name.lower()).count() > 0:
-        flash('That team name is taken.', 'danger')
-        return redirect(url_for('.login_page'), code=303)
-
-    password = getwords()
-    team = Team(name=name, password=password)
-    db.session.add(team)
-    db.session.commit()
-    session['team'] = team.id
-    flash('Team successfully created.', 'success')
-
-    redirect_url = request.args.get('next')
-    if not redirect_url or not is_safe_url(redirect_url):
-        redirect_url = url_for('.team_page', id=team.id)
-    return redirect(redirect_url, code=303)
-
-
-@bp.route('/auth_team', methods=['POST'])
-def auth_team():
+@bp.route('/login/', methods=['GET', 'POST'])
+def login_page():
     """Log into a team with its password."""
-    name = request.form.get('name', '')
-    password = request.form.get('password', '')
-    team = Team.query.filter(func.lower(Team.name) == name.lower()).first()
+    login_form = LoginForm(prefix='login')
+    create_form = NewTeamForm(prefix='create')
+    success = False
+    formtype = request.args.get('type')
 
-    if team is None:
-        flash('No team exists with that name.', 'danger')
-        return redirect(url_for('.login_page'), code=303)
-    if not safe_str_cmp(password, team.password):
-        flash('Incorrect team password.', 'danger')
-        return redirect(url_for('.login_page'), code=303)
+    if login_form.validate_on_submit() and login_form.submit.data:
+        name = login_form.name.data
+        password = login_form.password.data
+        team = Team.query.filter(func.lower(Team.name) == name.lower()).first()
 
-    session['team'] = team.id
-    session.permanent = True
-    flash('You are now logged in as %s.' % team.name, 'success')
+        if team is None:
+            flash('No team exists with that name.', 'danger')
+        elif  not safe_str_cmp(password, team.password):
+            flash('Incorrect team password.', 'danger')
+        else:
+            session['team'] = team.id
+            session.permanent = True
+            flash('You are now logged in as %s.' % team.name, 'success')
+            success = True
 
-    redirect_url = request.args.get('next')
-    if not redirect_url or not is_safe_url(redirect_url):
-        redirect_url = url_for('.team_page', id=team.id)
-    return redirect(redirect_url, code=303)
+    elif create_form.validate_on_submit() and create_form.submit.data:
+        name = create_form.name.data
+
+        if Team.query.filter(func.lower(Team.name) == name.lower()).count():
+            flash('That team name is taken.', 'danger')
+        else:
+            team = Team(name=name, password=getwords())
+            db.session.add(team)
+            db.session.commit()
+            session['team'] = team.id
+            flash('Team successfully created.', 'success')
+            success = True
+
+    if success:
+        redirect_url = request.args.get('next')
+        if not redirect_url or not is_safe_url(redirect_url):
+            redirect_url = url_for('.team_page', id=team.id)
+        return redirect(redirect_url, code=303)
+    else:
+        return render_template('login.html', create_form=create_form,
+                               login_form=login_form)
 
 
 @bp.route('/logout/')
 @require_auth
 def logout():
     """Clear the session, and redirect to home."""
-    ensure_csrf(request.args.get('token'))
+    if not validate_csrf(request.args.get('token')):
+        abort(400)
     session.clear()
     flash('You have been logged out.', 'info')
     return redirect(url_for('.home_page'), code=303)

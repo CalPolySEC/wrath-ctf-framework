@@ -1,21 +1,23 @@
 {% extends 'base.html' %}
 
+{% macro field(form_field) -%}
+      {{ form_field.label(class='sr-only') }}
+      {{ form_field(class='form-control', placeholder=form_field.label.text, required=True) }}
+{%- endmacro %}
+
 {% block body %}
-    <form class="create-form" method="POST" action="{{ url_for('.new_team', next=request.args.get('next')) }}">
-      <input type="hidden" name="token" value="{{ session['csrf_token'] }}">
+    <form class="create-form" method="POST">
+      {{ create_form.hidden_tag() }}
       <h2>Create a new team</h2>
-      <label for="new-name" class="sr-only">Team name</label>
-      <input type="text" id="new-name" name="name" class="form-control" placeholder="Team name" required>
+      {{ field(create_form.name) }}
       <div class="pw-notice">(A password will be generated for your team)</div>
-      <button class="btn btn-lg btn-primary btn-block" type="submit">Create team</button>
+      {{ create_form.submit(class='btn btn-lg btn-primary btn-block') }}
     </form>
-    <form class="existing-form" method="POST" action="{{ url_for('.auth_team', next=request.args.get('next')) }}">
-      <input type="hidden" name="token" value="{{ session['csrf_token'] }}">
+    <form class="existing-form" method="POST">
+      {{ login_form.hidden_tag() }}
       <h2>Join an existing team</h2>
-      <label for="existing-name" class="sr-only">Team name</label>
-      <input type="text" id="existing-name" name="name" class="form-control" placeholder="Team name" required>
-      <label for="existing-password" class="sr-only">Password</label>
-      <input type="password" id="existing-password" name="password" class="form-control" placeholder="Password" required>
-      <button class="btn btn-lg btn-primary btn-block" type="submit">Join team</button>
+      {{ field(login_form.name) }}
+      {{ field(login_form.password) }}
+      {{ login_form.submit(class='btn btn-lg btn-primary btn-block') }}
     </form>
 {%- endblock %}
