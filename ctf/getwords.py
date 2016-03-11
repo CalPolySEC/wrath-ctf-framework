@@ -10,7 +10,7 @@ PW_LENGTH = 3
 
 
 def randomize():
-    """ black magic to randomize a dictionary file
+    """ Black magic to randomize a dictionary file
         using command-line sort(8)
         Don't worry, we lock the dict file """
     if getoutput('uname') != "Linux" and 'n' in input("Your OS might not support `sort -R`, proceed? [Yn] ").lower():
@@ -27,7 +27,7 @@ class PasswordFactory:
         IT'S A FACTORY. """
 
     def refresh(self):
-        """ delicious randomized steak
+        """ Delicious randomized steak
             with a side of effects """
         randomize()
         self.passwords = getwords()
