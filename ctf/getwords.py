@@ -1,12 +1,11 @@
 from subprocess import getoutput
 from random import randrange
 from filelock import FileLock
+from time import time
 import os
 
 LOCK_PATH = '/tmp/wordlist_dict.lock'
 DICT_PATH = './dict.txt'
-
-OOPS_SEEK_TOO_FAR = 48
 
 
 def randomize():
@@ -19,14 +18,25 @@ def randomize():
             f.write(out)
         f.close()
 
+class PasswordFactory:
+    def refresh(self):
+        randomize()
+        self.passwords = getwords()
+        self.remaining = int(len(passwords) / 3)
+
+    def get_pass(self):
+        if self.remaining == 0:
+            self.refresh()
+        pw = ""
+        for i in range(2):
+            pw += self.passwords.pop()
+            pw += '_'
+        pw += self.passwords.pop()
+        self.remaining -= 1
 
 def getwords():
     with open(DICT_PATH, 'r') as f:
-        f.seek(randrange(0, os.path.getsize(DICT_PATH) - OOPS_SEEK_TOO_FAR))
-        out = f.readlines(OOPS_SEEK_TOO_FAR)
-        out = [x.replace('\n', '') for x in out]
-    return '_'.join(out[1:4])
-
+        f.readlines()
 
 if __name__ == '__main__':
     randomize()
