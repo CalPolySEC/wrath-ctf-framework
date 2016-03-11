@@ -4,7 +4,6 @@ import subprocess
 
 ENCRYPT="./encrypt.sh"
 DECRYPT="./decrypt.sh"
-LOCK_PATH="/tmp/pysha_crypt.lock"
 
 
 def fcrypt(CRYPT, fin, fout, pw):
