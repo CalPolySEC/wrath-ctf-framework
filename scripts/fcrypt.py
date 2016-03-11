@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 
 import subprocess
-import hashlib
-import FileLock
 
 ENCRYPT="./encrypt.sh"
 DECRYPT="./decrypt.sh"
