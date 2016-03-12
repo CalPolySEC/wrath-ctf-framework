@@ -11,9 +11,7 @@ Todo
 * Time remaining til CTF end (auto-close challenges)
 * Genericize (make is plug-n-play-able for any ctf with a simple config file, json, or whatever)
 * We need a Jason API
-* Flask-WTF
 * Fix code inconsistencies
-* Decompose code files
 
 Adding Challenges
 -----------------
