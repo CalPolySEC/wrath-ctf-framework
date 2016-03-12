@@ -29,7 +29,7 @@ class PasswordFactory:
     def refresh(self):
         """ Delicious randomized steak
             with a side of effects """
-        randomize()
+        randomize() # side effects may include thread drowsiness and blocking I/O
         self.passwords = getwords()
         self.remaining = int(len(passwords) / 3)
 
