@@ -12,6 +12,7 @@ Todo
 * Genericize (make is plug-n-play-able for any ctf with a simple config file, json, or whatever)
 * We need a Jason API
 * Fix code inconsistencies
+* Stop Snoopin
 
 Adding Challenges
 -----------------
