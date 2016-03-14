@@ -1,9 +1,9 @@
 from flask import Flask, render_template
 from flask.ext.wtf.csrf import CsrfProtect
+from redis import StrictRedis
 from werkzeug.exceptions import HTTPException, InternalServerError
-from . import __name__ as package_name
+from . import __name__ as package_name, api, frontend
 from .models import db
-from .routes import bp
 import os
 
 
@@ -15,6 +15,8 @@ def create_app():
     app.config['WTF_CSRF_CHECK_DEFAULT'] = False
     app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///test.db')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+    app.redis = StrictRedis()
 
     CsrfProtect(app)
     db.init_app(app)
@@ -33,6 +35,7 @@ def create_app():
             exc = InternalServerError()
         return render_template('error.html', error=exc), exc.code
 
-    app.register_blueprint(bp)
+    app.register_blueprint(frontend.bp)
+    app.register_blueprint(api.bp, url_prefix='/api')
 
     return app

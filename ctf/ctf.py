@@ -1,9 +1,11 @@
+from base64 import urlsafe_b64encode
 from datetime import datetime
 from flask import current_app
 from werkzeug.security import safe_str_cmp
 from .getwords import getwords
 from .models import db, Team, Flag, Level, Category
 import hashlib
+import os
 
 
 def has_ended():
@@ -24,6 +26,20 @@ def get_team(id):
 def get_categories():
     cat_query = Category.query.order_by(Category.order.asc())
     return [(cat.name, cat.levels) for cat in cat_query]
+
+
+def create_session_key(team_id):
+    token = urlsafe_b64encode(os.urandom(24)).decode('utf-8')
+    current_app.redis.set('api-token.%s' % token, team_id)
+    return token
+
+
+def team_for_token(token):
+    team_id = current_app.redis.get('api-token.%s' % token)
+    if not team_id:
+        return None
+    else:
+        return int(team_id)
 
 
 def login_team(name, password):
