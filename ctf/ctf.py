@@ -1,5 +1,6 @@
 from datetime import datetime
 from flask import current_app
+from werkzeug.security import safe_str_cmp
 from .getwords import getwords
 from .models import db, Team, Flag, Level, Category
 import hashlib
@@ -25,7 +26,7 @@ def get_categories():
     return [(cat.name, cat.levels) for cat in cat_query]
 
 
-def login_team(username, password):
+def login_team(name, password):
     team = Team.query.filter(db.func.lower(Team.name) == name.lower()).first()
     if team is None or not safe_str_cmp(password, team.password):
         return None
