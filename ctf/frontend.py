@@ -17,7 +17,7 @@ except ImportError:
     from urlparse import urlparse
 
 
-bp = Blueprint('routes', __name__)
+bp = Blueprint('frontend', __name__)
 
 
 def is_safe_url(url):
@@ -123,7 +123,7 @@ def submit_flag():
         return snoopin()
 
     db_flag, err_msg = ctf.add_flag(fleg, session['team'])
-    if err_msg:
+    if db_flag is None:
         flash(err_msg, 'danger')
     else:
         flash('Correct! You have earned {0:d} points for your team.'

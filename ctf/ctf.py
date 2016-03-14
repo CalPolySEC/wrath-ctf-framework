@@ -57,8 +57,8 @@ def add_flag(fleg, team_id):
 
     team.levels.append(db_fleg.level)
     team.points += db_fleg.level.points
-    team.last_flag = func.now()
+    team.last_flag = db.func.now()
     db.session.add(team)
     db.session.commit()
 
-    return db_fleg
+    return db_fleg, None
