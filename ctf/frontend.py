@@ -9,7 +9,6 @@ from werkzeug.exceptions import HTTPException, BadRequest, NotFound, InternalSer
 from werkzeug.security import safe_str_cmp
 from . import ctf
 from .forms import NewTeamForm, LoginForm
-from .getwords import getwords
 import os
 try:
     from urllib.parse import urlparse
