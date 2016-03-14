@@ -1,4 +1,3 @@
-from base64 import urlsafe_b64encode
 from datetime import datetime
 from flask import Blueprint, current_app, request, session, abort, redirect, \
                   render_template, url_for, flash
@@ -8,8 +7,8 @@ from hashlib import sha256
 from sqlalchemy import func
 from werkzeug.exceptions import HTTPException, BadRequest, NotFound, InternalServerError
 from werkzeug.security import safe_str_cmp
+from . import ctf
 from .forms import NewTeamForm, LoginForm
-from .models import db, Team, Flag, Level, Category
 from .getwords import getwords
 import os
 try:
@@ -46,7 +45,7 @@ def require_auth(fn):
 
 @bp.route('/')
 def home_page():
-    teams = Team.query.order_by(Team.points.desc(), Team.last_flag).all()
+    teams = ctf.get_teams()
     return render_template('home.html', teams=teams)
 
 
@@ -59,9 +58,10 @@ def flag_page():
 @bp.route('/teams/<int:id>/')
 def team_page(id):
     """Get the page for a specific team."""
-    team = Team.query.filter_by(id=id).first_or_404()
-    cat_query = Category.query.order_by(Category.order.asc())
-    categories = [(cat.name, cat.levels) for cat in cat_query]
+    team = ctf.get_team(id)
+    if not team:
+        abort(404)
+    categories = ctf.get_categories()
     return render_template('team.html', team=team, categories=categories)
 
 
@@ -70,38 +70,24 @@ def login_page():
     """Log into a team with its password."""
     login_form = LoginForm(prefix='login')
     create_form = NewTeamForm(prefix='create')
-    success = False
-    formtype = request.args.get('type')
+    team = None
 
     if login_form.validate_on_submit() and login_form.submit.data:
-        name = login_form.name.data
-        password = login_form.password.data
-        team = Team.query.filter(func.lower(Team.name) == name.lower()).first()
-
-        if team is None:
-            flash('No team exists with that name.', 'danger')
-        elif  not safe_str_cmp(password, team.password):
-            flash('Incorrect team password.', 'danger')
-        else:
-            session['team'] = team.id
-            session.permanent = True
+        team = ctf.login_team(login_form.name.data, login_form.password.data)
+        if team:
             flash('You are now logged in as %s.' % team.name, 'success')
-            success = True
-
-    elif create_form.validate_on_submit() and create_form.submit.data:
-        name = create_form.name.data
-
-        if Team.query.filter(func.lower(Team.name) == name.lower()).count():
-            flash('That team name is taken.', 'danger')
         else:
-            team = Team(name=name, password=getwords())
-            db.session.add(team)
-            db.session.commit()
-            session['team'] = team.id
+            flash('Incorrect team name or password.', 'danger')
+    elif create_form.validate_on_submit() and create_form.submit.data:
+        team = ctf.create_team(create_form.name.data)
+        if team:
             flash('Team successfully created.', 'success')
-            success = True
+        else:
+            flash('That team name is taken.', 'danger')
 
-    if success:
+    if team:
+        session['team'] = team.id
+        session.permanent = True
         redirect_url = request.args.get('next')
         if not redirect_url or not is_safe_url(redirect_url):
             redirect_url = url_for('.team_page', id=team.id)
@@ -131,36 +117,15 @@ def snoopin():
 @require_auth
 def submit_flag():
     """Attempt to submit a flag, and redirect to the flag page."""
-    flag = request.form.get('flag', '')
-
+    fleg = request.form.get('flag', '')
     # Deliver swift justice
-    if flag == 'V375BrzPaT':
+    if fleg == 'V375BrzPaT':
         return snoopin()
 
-    end_time = current_app.config['END_TIME_UTC']
-    if end_time and datetime.utcnow() > datetime.strptime(end_time, '%Y-%m-%dT%H:%M:%S.%fZ'):
-        flash('The competition has ended, sorry.', 'danger')
-        return redirect(url_for('.flag_page'), code=303)
-
-    flag_hash = sha256(flag.encode('utf-8')).hexdigest()
-    db_flag = Flag.query.filter_by(hash=flag_hash).first()
-    team = Team.query.filter_by(id=session['team']).first()
-
-    if db_flag is None:
-        flash('Sorry, the flag you entered is not correct.', 'danger')
-    elif db_flag.level in team.levels:
-        flash('You\'ve already entered that flag.', 'warning')
-    elif db_flag.level.category.enforce and db.session.query(Level) \
-            .filter(Level.category == db_flag.level.category) \
-            .filter(Level.level < db_flag.level.level) \
-            .filter(~Level.teams.any(id=team.id)).count() > 0:
-        flash('You must complete all previous challenges first!', 'danger')
+    db_flag, err_msg = ctf.add_flag(fleg, session['team'])
+    if err_msg:
+        flash(err_msg, 'danger')
     else:
-        team.levels.append(db_flag.level)
-        team.points += db_flag.level.points
-        team.last_flag = func.now()
-        db.session.add(team)
-        db.session.commit()
         flash('Correct! You have earned {0:d} points for your team.'
               .format(db_flag.level.points), 'success')
 
