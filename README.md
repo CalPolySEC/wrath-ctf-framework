@@ -28,6 +28,8 @@ It needs to contain
 Development Environment
 -----------------------
 
+**bash/zsh**
+
 Here's how to get a local copy up and running:
 
     virtualenv venv
@@ -43,3 +45,21 @@ By default, this will be available at http://localhost:5000. To run on a
 different port, use:
 
     PORT=8080 python app.py
+
+**fish**
+
+Here's how to get a local copy up and running:
+
+    virtualenv venv
+    . venv/bin/activate.fish
+    pip install -r requirements.txt
+    python scripts/build_db.py
+
+And to run the app:
+
+    python app.py
+
+By default, this will be available at http://localhost:5000. To run on a
+different port, use:
+
+    env PORT=8080 python app.py
