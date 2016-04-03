@@ -21,27 +21,27 @@ def json_value(key, desired_type=None):
     try:
         value = data[key]
     except (KeyError, TypeError):
-        abort(400)
+        abort(400, 'Missing JSON value \'{0}\'.'.format(key))
     if desired_type and not isinstance(value, desired_type):
-        abort(400)
+        if desired_type == text_type:
+            type_name = 'string'
+        else:
+            type_name = desired_type.__name__
+        abort(400, 'Expected {0} for \'{1}\'.'.format(type_name, key))
     return value
 
 
-def require_auth(view):
-    @wraps(view)
-    def inner(*args, **kwargs):
-        token = request.headers.get('X-Session-Key', '')
-        g.user = ctf.user_for_token(token)
-        if not g.user:
-            abort(403, 'A valid X-Session-Key header is required.')
-        return view(*args, **kwargs)
-    return inner
+def ensure_auth():
+    token = request.headers.get('X-Session-Key', '')
+    g.user = ctf.user_for_token(token)
+    if not g.user:
+        abort(403, 'A valid X-Session-Key header is required.')
 
 
 def require_team(view):
     @wraps(view)
-    @require_auth
     def inner(*args, **kwargs):
+        ensure_auth()
         g.team = g.user.team
         if g.team is None:
             abort(403, 'You must be part of a team.')
@@ -65,16 +65,17 @@ def create_user():
 def login():
     username = json_value('username', text_type)
     password = json_value('password', text_type)
-    user = ctf.login(username, password)
-    if not user:
-        abort(403, 'Incorrect team name or password.')
+    try:
+        user = ctf.login(username, password)
+    except CtfException as exc:
+        abort(403, exc.message)
     key = ctf.create_session_key(user.id)
-    return jsonify({'key': key})
+    return jsonify({'key': key}), 201
 
 
 @bp.route('/users/me')
-@require_auth
 def me():
+    ensure_auth()
     user_obj = {
         'id': g.user.id,
         'username': g.user.name,
@@ -89,8 +90,8 @@ def me():
 
 
 @bp.route('/teams/', methods=['POST'])
-@require_auth
 def create_team():
+    ensure_auth()
     name = json_value('name', text_type)
     try:
         team = ctf.create_team(g.user, name)
@@ -100,19 +101,6 @@ def create_team():
         'id': team.id,
         'name': team.name,
     }), 201
-
-
-@bp.route('/invites/')
-@require_auth
-def get_invites():
-    return jsonify({
-        'teams': [
-            {
-                'id': team.id,
-                'name': team.name,
-            } for team in g.user.invites
-        ]
-    })
 
 
 @bp.route('/invites/', methods=['POST'])
@@ -127,8 +115,8 @@ def create_invite():
 
 
 @bp.route('/users/me/team', methods=['PUT'])
-@require_auth
 def join_team():
+    ensure_auth()
     team_id = json_value('team', int)
     try:
         ctf.join_team(team_id, g.user)
@@ -146,7 +134,11 @@ def leave_team():
 
 @bp.route('/teams/')
 def leaderboard():
-    teams = ctf.get_teams()
+    if request.args.get('invited', 'false') != 'false':
+        ensure_auth()
+        teams = g.user.invites
+    else:
+        teams = ctf.get_teams()
     return jsonify({
         'teams': [{
             'id': team.id,
