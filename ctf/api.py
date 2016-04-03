@@ -37,16 +37,17 @@ def ensure_auth():
     token = request.headers.get(header_name)
     if token is None:
         abort(403, err_msg)
-    g.user = ctf.user_for_token(token)
-    if not g.user:
+    user = ctf.user_for_token(token)
+    if not user:
         abort(403, err_msg)
+    return user
 
 
 def require_team(view):
     @wraps(view)
     def inner(*args, **kwargs):
-        ensure_auth()
-        g.team = g.user.team
+        user = ensure_auth()
+        g.team = user.team
         if g.team is None:
             abort(403, 'You must be part of a team.')
         return view(*args, **kwargs)
@@ -79,16 +80,16 @@ def login():
 
 @bp.route('/users/me')
 def me():
-    ensure_auth()
+    user = ensure_auth()
     user_obj = {
-        'id': g.user.id,
-        'username': g.user.name,
+        'id': user.id,
+        'username': user.name,
         'team': None,
     }
-    if g.user.team is not None:
+    if user.team is not None:
         user_obj['team'] = {
-            'id': g.user.team.id,
-            'name': g.user.team.name,
+            'id': user.team.id,
+            'name': user.team.name,
         }
     return jsonify(user_obj)
 
@@ -98,7 +99,7 @@ def create_team():
     ensure_auth()
     name = json_value('name', text_type)
     try:
-        team = ctf.create_team(g.user, name)
+        team = ctf.create_team(user, name)
     except CtfException as exc:
         abort(400, exc.message)
     return jsonify({
@@ -120,10 +121,10 @@ def create_invite():
 
 @bp.route('/users/me/team', methods=['PUT'])
 def join_team():
-    ensure_auth()
+    user = ensure_auth()
     team_id = json_value('team', int)
     try:
-        ctf.join_team(team_id, g.user)
+        ctf.join_team(team_id, user)
     except CtfException as exc:
         abort(400, exc.message)
     return Response(status=204)
@@ -132,15 +133,16 @@ def join_team():
 @bp.route('/users/me/team', methods=['DELETE'])
 @require_team
 def leave_team():
-    ctf.leave_team(g.user, g.team)
+    user = ensure_auth()
+    ctf.leave_team(user, g.team)
     return Response(status=204)
 
 
 @bp.route('/teams/')
 def leaderboard():
     if request.args.get('invited', 'false') != 'false':
-        ensure_auth()
-        teams = g.user.invites
+        user = ensure_auth()
+        teams = user.invites
     else:
         teams = ctf.get_teams()
     return jsonify({
