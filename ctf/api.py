@@ -1,5 +1,5 @@
 # JSON Bourne API
-from flask import Blueprint, request, g, abort, Response, jsonify, make_response
+from flask import Blueprint, request, g, abort, Response, jsonify
 from functools import wraps
 from . import ctf
 from ._compat import text_type
@@ -12,6 +12,7 @@ bp = Blueprint('api', __name__)
 @bp.errorhandler(400)
 @bp.errorhandler(403)
 @bp.errorhandler(404)
+@bp.errorhandler(409)
 def handle_error(exc):
     return jsonify({'message': exc.description}), exc.code
 
@@ -43,25 +44,31 @@ def ensure_auth():
     return user
 
 
-def require_team(view):
-    @wraps(view)
-    def inner(*args, **kwargs):
+def ensure_team(user=None):
+    """Return the team for the current user, or 403 if there is none.
+
+    user is optional. If omitted, it will be determined from ensure_auth(). Be
+    careful when you supply this parameter, make sure it came from a call to
+    ensure_auth().
+    """
+    if user is None:
         user = ensure_auth()
-        g.team = user.team
-        if g.team is None:
-            abort(403, 'You must be part of a team.')
-        return view(*args, **kwargs)
-    return inner
+    team = ctf.team_for_user(user)
+    if team is None:
+        abort(403, 'You must be part of a team.')
+    return user.team
 
 
 @bp.route('/users/', methods=['POST'])
 def create_user():
     username = json_value('username', text_type)
     password = json_value('password', text_type)
+    if not username or not password:
+        abort(400, 'You must supply a username and password.')
     try:
         user = ctf.create_user(username, password)
     except CtfException as exc:
-        abort(400, exc.message)
+        abort(409, exc.message)
     key = ctf.create_session_key(user.id)
     return jsonify({'key': key}), 201
 
@@ -96,21 +103,32 @@ def me():
 
 @bp.route('/teams/', methods=['POST'])
 def create_team():
-    ensure_auth()
+    user = ensure_auth()
     name = json_value('name', text_type)
     try:
         team = ctf.create_team(user, name)
     except CtfException as exc:
-        abort(400, exc.message)
+        abort(409, exc.message)
     return jsonify({
         'id': team.id,
         'name': team.name,
     }), 201
 
 
+@bp.route('/teams/', methods=['PUT'])
+def rename_team():
+    team = ensure_team()
+    name = json_value('name', text_type)
+    try:
+        team = ctf.rename_team(team, name)
+    except CtfException as exc:
+        abort(409, exc.message)
+    return Response(status=204)
+
+
 @bp.route('/invites/', methods=['POST'])
-@require_team
 def create_invite():
+    team = ensure_team()
     user = json_value('user', text_type)
     try:
         ctf.create_invite(g.team, user)
@@ -131,10 +149,10 @@ def join_team():
 
 
 @bp.route('/users/me/team', methods=['DELETE'])
-@require_team
 def leave_team():
     user = ensure_auth()
-    ctf.leave_team(user, g.team)
+    ensure_team(user)
+    ctf.leave_team(user)
     return Response(status=204)
 
 
@@ -172,11 +190,11 @@ def teams(id):
 
 
 @bp.route('/flags/', methods=['POST'])
-@require_team
 def submit_flag():
+    team = ensure_team()
     fleg = json_value('flag', text_type)
     try:
-        db_fleg = ctf.add_flag(fleg, g.team)
+        db_fleg = ctf.add_flag(fleg, team)
     except CtfException as exc:
         abort(400, exc.message)
     return jsonify({'points_earned': db_fleg.level.points}), 201

@@ -59,9 +59,11 @@ def user_for_token(session_key):
     return User.query.filter_by(id=int(user_id)).first()
 
 
+def team_for_user(user):
+    return user.team
+
+
 def create_user(username, password):
-    if not username or not password:
-        raise CtfException('You must supply a username and password.')
     if User.query.filter(db.func.lower(User.name) == username.lower()).count():
         raise CtfException('That username is taken.')
     pw_hash = hashpw(password.encode('utf-8'), gensalt())
@@ -95,6 +97,14 @@ def create_team(user, name):
     return team
 
 
+def rename_team(team, name):
+    if Team.query.filter((db.func.lower(Team.name) == name.lower()) & (Team.id != team.id)).count():
+        raise CtfException('That team name is taken.')
+    team.name = name
+    db.session.add(team)
+    db.session.commit()
+
+
 def create_invite(team, username):
     user = User.query.filter(db.func.lower(User.name) == username.lower()).first()
     if not user:
@@ -115,9 +125,9 @@ def join_team(team_id, user):
     db.session.commit()
 
 
-def leave_team(user, team):
-    if user.team != team:
-        raise CtfException('The user is not a member of this team.')
+def leave_team(user):
+    if not user.team:
+        raise CtfException('You are not a member of this team.')
     user.team = None
     db.session.add(user)
     db.session.commit()
