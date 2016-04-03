@@ -1,7 +1,7 @@
 API Spec
 ========
 
-#### Create a new user
+### Create a new user
 
     POST /api/users/
 
@@ -20,7 +20,7 @@ API Spec
 }
 ```
 
-#### Login as a user
+### Login as a user
 
     POST /api/sessions/
 
@@ -39,8 +39,7 @@ API Spec
 }
 ```
 
-
-#### User data
+### User data
 
     GET /api/user
 
