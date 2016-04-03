@@ -1,34 +1,42 @@
 API Spec
 ========
 
-`POST` `/api/users/` - create a new user
+#### Create a new user
 
-Sample request:
+    POST /api/users/
 
-    {
-      "username": "tyler_durden",
-      "password": "dQw4w9WgXcQ"
-    }
+```json
+{
+  "username": "tyler_durden",
+  "password": "dQw4w9WgXcQ"
+}
+```
 
-Sample response:
+Response
 
-    {
-      "key": "9bZkp7q19f0.KmtzQCSh6xk"
-    }
+```json
+{
+  "key": "9bZkp7q19f0.KmtzQCSh6xk"
+}
+```
 
 * * *
 
-`POST` `/api/sessions/` - log in
+#### Login as a user
 
-Sample request:
+    POST /api/sessions/
 
-    {
-      "username": "tyler_durden",
-      "password": "dQw4w9WgXcQ"
-    }
+```json
+{
+  "username": "tyler_durden",
+  "password": "dQw4w9WgXcQ"
+}
+```
 
-Sample response:
+Response
 
-    {
-      "key": "9bZkp7q19f0.KmtzQCSh6xk"
-    }
+```json
+{
+  "key": "KmtzQCSh6xk.9bZkp7q19f0"
+}
+```
