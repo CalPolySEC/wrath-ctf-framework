@@ -44,18 +44,22 @@ def ensure_auth():
     return user
 
 
-def ensure_team(user=None):
+def ensure_team(user=None, id=None):
     """Return the team for the current user, or 403 if there is none.
 
     user is optional. If omitted, it will be determined from ensure_auth(). Be
     careful when you supply this parameter, make sure it came from a call to
     ensure_auth().
+
+    id is optional, will 403 if the team does not match the given id.
     """
     if user is None:
         user = ensure_auth()
     team = ctf.team_for_user(user)
     if team is None:
         abort(403, 'You must be part of a team.')
+    elif id and team.id != id:
+        abort(403, 'You are not a member of this team.')
     return user.team
 
 
@@ -85,7 +89,7 @@ def login():
     return jsonify({'key': key}), 201
 
 
-@bp.route('/users/me')
+@bp.route('/user')
 def me():
     user = ensure_auth()
     user_obj = {
@@ -115,29 +119,7 @@ def create_team():
     }), 201
 
 
-@bp.route('/teams/', methods=['PUT'])
-def rename_team():
-    team = ensure_team()
-    name = json_value('name', text_type)
-    try:
-        team = ctf.rename_team(team, name)
-    except CtfException as exc:
-        abort(409, exc.message)
-    return Response(status=204)
-
-
-@bp.route('/invites/', methods=['POST'])
-def create_invite():
-    team = ensure_team()
-    user = json_value('user', text_type)
-    try:
-        ctf.create_invite(g.team, user)
-    except CtfException as exc:
-        abort(400, exc.message)
-    return Response(status=204)
-
-
-@bp.route('/users/me/team', methods=['PUT'])
+@bp.route('/user/team', methods=['PATCH'])
 def join_team():
     user = ensure_auth()
     team_id = json_value('team', int)
@@ -148,10 +130,10 @@ def join_team():
     return Response(status=204)
 
 
-@bp.route('/users/me/team', methods=['DELETE'])
+@bp.route('/user/team', methods=['DELETE'])
 def leave_team():
     user = ensure_auth()
-    ensure_team(user)
+    ensure_team(user=user)
     ctf.leave_team(user)
     return Response(status=204)
 
@@ -187,6 +169,28 @@ def teams(id):
             for category, levels in categories},
         },
     })
+
+
+@bp.route('/teams/<int:id>', methods=['PATCH'])
+def rename_team(id):
+    team = ensure_team(id=id)
+    name = json_value('name', text_type)
+    try:
+        team = ctf.rename_team(team, name)
+    except CtfException as exc:
+        abort(409, exc.message)
+    return Response(status=204)
+
+
+@bp.route('/teams/<int:id>/members', methods=['POST'])
+def invite_user(id):
+    team = ensure_team(id=id)
+    user = json_value('username', text_type)
+    try:
+        ctf.create_invite(g.team, user)
+    except CtfException as exc:
+        abort(400, exc.message)
+    return Response(status=204)
 
 
 @bp.route('/flags/', methods=['POST'])

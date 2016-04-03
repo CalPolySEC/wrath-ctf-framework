@@ -14,7 +14,7 @@ def app():
     return app
 
 
-def api_req(fn, url, token, data=None):
+def api_req(fn, url, token=None, data=None):
     headers = {}
     if token:
         headers['X-Session-Key'] = token
@@ -86,18 +86,21 @@ def test_user_auth(app):
 
         # Simple auth checking
         for k in (None, '', 'bad.sig', 'fake.TPRM-X0i3azi4DyIqjQy_8jTbHo'):
-            data, status = api_req(client.get, '/api/users/me', k)
+            data, status = api_req(client.get, '/api/user', k)
             assert status == 403
             assert data['message'] == ('A valid X-Session-Key header '
                                        'is required.')
 
-        data, status = api_req(client.get, '/api/users/me', key)
+        data, status = api_req(client.get, '/api/user', key)
         assert status == 200
 
 
 def test_teams(app):
-    def team_req(fn, name, key, status, message=None):
-        data, code = api_req(fn, '/api/teams/', key, {'name': name})
+    def team_req(fn, id=None, name=None, key=None, status=None, message=None):
+        url = '/api/teams/'
+        if id is not None:
+            url += str(id)
+        data, code = api_req(fn, url, key, {'name': name})
         assert code == status
         if message:
             assert data['message'] == message
@@ -106,24 +109,43 @@ def test_teams(app):
     with app.test_client() as client:
         key = auth(client)
 
-        data, status = api_req(client.get, '/api/users/me', key)
+        data, status = api_req(client.get, '/api/user', key)
         assert status == 200
         assert data['team'] is None
 
-        team_req(client.post, 'PPP', key, 201)
+        team_req(client.post, None, 'PPP', key, 201)
         for name in ('PPP', 'abc'):
-            team_req(client.post, name, key, 409,
+            team_req(client.post, None, name, key, 409,
                      'You are already a member of a team.')
 
-        data, status = api_req(client.get, '/api/users/me', key)
+        data, status = api_req(client.get, '/api/user', key)
         assert status == 200
         assert data['team']['name'] == 'PPP'
 
-        for name in ('PPP', 'Ppp', 'Hash Slinging Hackers'):
-            team_req(client.put, name, key, 204)
-            data, status = api_req(client.get, '/api/users/me', key)
+        for name in ('PPP', 'Ppp', 'Hash Slinging Hackers', 'PPP'):
+            team_req(client.patch, 1, name, key, 204)
+            data, status = api_req(client.get, '/api/user', key)
             assert status == 200
             assert data['team']['name'] == name
 
-        data, status = api_req(client.delete, '/api/users/me/team', key)
+        data, status = api_req(client.delete, '/api/user/team', key)
         assert status == 204
+
+        data, status = api_req(client.delete, '/api/user/team', key)
+        assert status == 403
+        assert data['message'] == 'You must be part of a team.'
+
+        team_req(client.post, None, 'PPP', key, 409, 'That team name is taken.')
+        team_req(client.post, None, 'Hash Slinging Hackers', key, 201)
+
+        team_req(client.patch, 1, 'PPP', key, 403,
+                 'You are not a member of this team.')
+
+        data, status = api_req(client.get, '/api/teams/')
+        assert status == 200
+        assert data == {
+            'teams': [
+                {'id': 1, 'name': 'PPP', 'points': 0},
+                {'id': 2, 'name': 'Hash Slinging Hackers', 'points': 0},
+            ],
+        }
