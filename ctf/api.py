@@ -93,7 +93,6 @@ def login():
 def me():
     user = ensure_auth()
     user_obj = {
-        'id': user.id,
         'username': user.name,
         'team': None,
     }
