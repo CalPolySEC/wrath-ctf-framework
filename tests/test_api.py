@@ -72,7 +72,7 @@ def test_user_auth(app):
         # User creation
         create_user('', '', 400, 'You must supply a username and password.')
 
-        data = create_user('test', 'test', 201)
+        data = create_user('test', 'test😊', 201)
         assert 'key' in data
 
         create_user('test', 'badpw', 409, 'That username is taken.')
@@ -80,8 +80,9 @@ def test_user_auth(app):
         # Login
         login('abc', 'badpw', 403, 'Incorrect username or password.')
         login('test', 'badpw', 403, 'Incorrect username or password.')
+        login('test', 'test', 403, 'Incorrect username or password.')
 
-        data = login('test', 'test', 201)
+        data = login('test', 'test😊', 201)
         key = data['key']
 
         # Simple auth checking
