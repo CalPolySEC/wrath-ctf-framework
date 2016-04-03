@@ -32,10 +32,14 @@ def json_value(key, desired_type=None):
 
 
 def ensure_auth():
-    token = request.headers.get('X-Session-Key', '')
+    header_name = 'X-Session-Key'
+    err_msg = 'A valid {0} header is required.'.format(header_name)
+    token = request.headers.get(header_name)
+    if token is None:
+        abort(403, err_msg)
     g.user = ctf.user_for_token(token)
     if not g.user:
-        abort(403, 'A valid X-Session-Key header is required.')
+        abort(403, err_msg)
 
 
 def require_team(view):
