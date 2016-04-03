@@ -12,15 +12,13 @@ API Spec
 }
 ```
 
-Response
+**Request**
 
 ```json
 {
   "key": "9bZkp7q19f0.KmtzQCSh6xk"
 }
 ```
-
-* * *
 
 #### Login as a user
 
@@ -33,10 +31,27 @@ Response
 }
 ```
 
-Response
+**Response**
 
 ```json
 {
   "key": "KmtzQCSh6xk.9bZkp7q19f0"
+}
+```
+
+
+#### User data
+
+    GET /api/user
+
+**Response**
+
+```json
+{
+  "username": "tyler_durden",
+  "team": {
+    "id": 1,
+    "name": "Fight Club"
+  }
 }
 ```
