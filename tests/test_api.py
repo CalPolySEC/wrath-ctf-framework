@@ -109,38 +109,67 @@ def test_teams(app):
     with app.test_client() as client:
         key = auth(client)
 
+        # Check that user is null
         data, status = api_req(client.get, '/api/user', key)
         assert status == 200
         assert data['team'] is None
 
+        # Create a team
         team_req(client.post, None, 'PPP', key, 201)
         for name in ('PPP', 'abc'):
             team_req(client.post, None, name, key, 409,
                      'You are already a member of a team.')
 
+        # Get user team
         data, status = api_req(client.get, '/api/user', key)
         assert status == 200
         assert data['team']['name'] == 'PPP'
 
-        for name in ('PPP', 'Ppp', 'Hash Slinging Hackers', 'PPP'):
+        # Change to h4x0r5, then back
+        for name in ('h4x0r5', 'PPP'):
             team_req(client.patch, 1, name, key, 204)
-            data, status = api_req(client.get, '/api/user', key)
-            assert status == 200
-            assert data['team']['name'] == name
 
+        # Delete team
         data, status = api_req(client.delete, '/api/user/team', key)
         assert status == 204
 
+        # Can't delete again
         data, status = api_req(client.delete, '/api/user/team', key)
         assert status == 403
         assert data['message'] == 'You must be part of a team.'
 
+        # Create a new one
         team_req(client.post, None, 'PPP', key, 409, 'That team name is taken.')
         team_req(client.post, None, 'Hash Slinging Hackers', key, 201)
 
+        # Team data
+        data, status = api_req(client.get, '/api/teams/1')
+        assert status == 200
+        assert data == {
+            'id': 1,
+            'name': 'PPP',
+            'points': 0,
+            'flags': {},
+        }
+
+        # Can't rename to another team
+        for name in ('PPP', 'Ppp'):
+            team_req(client.patch, 2, name, key, 409, 'That team name is taken.')
+
+        # Name changes, check that it changed
+        # Note: h4x0r5 should NOT 409
+        for name in ('Hash Slinging Hackers', 'h4x0r5',
+                     'hash slinGING hackers', 'Hash Slinging Hackers'):
+            team_req(client.patch, 2, name, key, 204)
+            data, status = api_req(client.get, '/api/user', key)
+            assert status == 200
+            assert data['team']['name'] == name
+
+        # Team perms
         team_req(client.patch, 1, 'PPP', key, 403,
                  'You are not a member of this team.')
 
+        # Leaderboard
         data, status = api_req(client.get, '/api/teams/')
         assert status == 200
         assert data == {

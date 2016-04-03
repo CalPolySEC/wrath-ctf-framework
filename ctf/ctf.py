@@ -126,8 +126,6 @@ def join_team(team_id, user):
 
 
 def leave_team(user):
-    if not user.team:
-        raise CtfException('You are not a member of this team.')
     user.team = None
     db.session.add(user)
     db.session.commit()

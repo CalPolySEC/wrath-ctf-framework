@@ -155,19 +155,17 @@ def leaderboard():
 
 
 @bp.route('/teams/<int:id>')
-def teams(id):
+def get_team(id):
     team = ctf.get_team(id)
     categories = ctf.get_categories()
     return jsonify({
-        'team': {
-            'id': team.id,
-            'name': team.name,
-            'points': team.points,
-            'flags': {
-                category:
-                [level.level for level in levels if level in team.levels]
-            for category, levels in categories},
-        },
+        'id': team.id,
+        'name': team.name,
+        'points': team.points,
+        'flags': {
+            category:
+            [level.level for level in levels if level in team.levels]
+        for category, levels in categories},
     })
 
 
