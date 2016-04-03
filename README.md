@@ -10,7 +10,6 @@ Todo
 * Statistics on how many have completed each challenge in each of the three modules
 * Time remaining til CTF end (auto-close challenges)
 * Genericize (make is plug-n-play-able for any ctf with a simple config file, json, or whatever)
-* We need a Jason API
 * Fix code inconsistencies
 * Stop Snoopin
 
