@@ -109,6 +109,8 @@ def create_invite(team, username):
     user = User.query.filter(db.func.lower(User.name) == username.lower()).first()
     if not user:
         raise CtfException('There is no user with that name.')
+    elif user.team == team:
+        raise CtfException('That user is already a member of this team.')
     elif user in team.invited:
         raise CtfException('That user has already been invited.')
     team.invited.append(user)

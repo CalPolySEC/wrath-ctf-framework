@@ -28,7 +28,7 @@ def json_value(key, desired_type=None):
             type_name = 'string'
         else:
             type_name = desired_type.__name__
-        abort(400, 'Expected {0} for \'{1}\'.'.format(type_name, key))
+        abort(400, 'Expected \'{0}\' to be type {1}.'.format(key, type_name))
     return value
 
 
@@ -56,10 +56,10 @@ def ensure_team(user=None, id=None):
     if user is None:
         user = ensure_auth()
     team = ctf.team_for_user(user)
-    if team is None:
-        abort(403, 'You must be part of a team.')
-    elif id and team.id != id:
+    if id and (team is None or team.id != id):
         abort(403, 'You are not a member of this team.')
+    elif team is None:
+        abort(403, 'You must be part of a team.')
     return user.team
 
 
@@ -119,6 +119,18 @@ def create_team():
     }), 201
 
 
+@bp.route('/teams/invited/')
+def invited_teams():
+    user = ensure_auth()
+    teams = user.invites
+    return jsonify({
+        'teams': [{
+            'id': team.id,
+            'name': team.name,
+        } for team in teams],
+    })
+
+
 @bp.route('/user/team', methods=['PATCH'])
 def join_team():
     user = ensure_auth()
@@ -140,11 +152,7 @@ def leave_team():
 
 @bp.route('/teams/')
 def leaderboard():
-    if request.args.get('invited', 'false') != 'false':
-        user = ensure_auth()
-        teams = user.invites
-    else:
-        teams = ctf.get_teams()
+    teams = ctf.get_teams()
     return jsonify({
         'teams': [{
             'id': team.id,
@@ -185,7 +193,7 @@ def invite_user(id):
     team = ensure_team(id=id)
     user = json_value('username', text_type)
     try:
-        ctf.create_invite(g.team, user)
+        ctf.create_invite(team, user)
     except CtfException as exc:
         abort(400, exc.message)
     return Response(status=204)

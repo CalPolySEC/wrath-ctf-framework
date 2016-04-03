@@ -31,9 +31,9 @@ def api_req(fn, url, token=None, data=None):
     return data, rv.status_code
 
 
-def auth(client):
+def auth(client, username='test'):
     data, status = api_req(client.post, '/api/users/', None, {
-        'username': 'test',
+        'username': username,
         'password': 'test',
     })
     assert status == 201
@@ -67,7 +67,7 @@ def test_user_auth(app):
         assert status == 400
         assert data['message'] == 'Missing JSON value \'username\'.'
 
-        create_user(1, '', 400, 'Expected string for \'username\'.')
+        create_user(1, '', 400, 'Expected \'username\' to be type string.')
 
         # User creation
         create_user('', '', 400, 'You must supply a username and password.')
@@ -178,3 +178,74 @@ def test_teams(app):
                 {'id': 2, 'name': 'Hash Slinging Hackers', 'points': 0},
             ],
         }
+
+
+def test_invites(app):
+    with app.test_client() as client:
+        def invite_user(key, team, username, status, message=None):
+            data, code = api_req(client.post, '/api/teams/%d/members' % team,
+                                   key, {'username': username})
+            assert code == status
+            if message:
+                assert data['message'] == message
+            return data
+
+        def set_team(key, team, status, message=None):
+            data, code = api_req(client.patch, '/api/user/team', key,
+                                 {'team': team})
+            assert code == status
+            if message:
+                assert data['message'] == message
+            return data
+
+        key1 = auth(client, 'user1')
+        key2 = auth(client, 'user2')
+
+        # Create a team
+        data, status = api_req(client.post, '/api/teams/', key1, {
+            'name': 'PPP',
+        })
+        assert status == 201
+        assert data['id'] == 1
+
+        # Permissions
+        invite_user(key2, 1, 'user1', 403,
+                    'You are not a member of this team.')
+        invite_user(key2, 1, 'user2', 403,
+                    'You are not a member of this team.')
+        invite_user(key1, 1337, 'user2', 403,
+                    'You are not a member of this team.')
+        invite_user(key2, 1337, 'user2', 403,
+                    'You are not a member of this team.')
+        invite_user(key1, 1, 'abc', 400, 'There is no user with that name.')
+        invite_user(key1, 1, 'user1', 400,
+                    'That user is already a member of this team.')
+
+        # Bad type
+        data, status = api_req(client.patch, '/api/user/team', key1,
+                               {'team': 'PPP'})
+        assert status == 400
+        assert data['message'] == 'Expected \'team\' to be type int.'
+
+        # Bad accepts
+        set_team(key1, 1, 400, 'You have not been invited to this team.')
+        set_team(key2, 1, 400, 'You have not been invited to this team.')
+        set_team(key1, 1337, 400, 'You have not been invited to this team.')
+        set_team(key2, 1337, 400, 'You have not been invited to this team.')
+
+        # Valid invite
+        invite_user(key1, 1, 'user2', 204)
+        invite_user(key1, 1, 'user2', 400,
+                    'That user has already been invited.')
+        set_team(key2, 1, 204)
+
+        data, status = api_req(client.get, '/api/teams/invited/', key2)
+        assert status == 200
+        assert data == {'teams': [{
+            'id': 1,
+            'name': 'PPP',
+        }]}
+
+        data, status = api_req(client.get, '/api/user', key2)
+        assert status == 200
+        assert data['team']['id'] == 1
