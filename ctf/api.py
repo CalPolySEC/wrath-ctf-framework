@@ -44,21 +44,17 @@ def ensure_auth():
     return user
 
 
-def ensure_team(user=None, id=None):
+def ensure_team(user=None):
     """Return the team for the current user, or 403 if there is none.
 
     user is optional. If omitted, it will be determined from ensure_auth(). Be
     careful when you supply this parameter, make sure it came from a call to
     ensure_auth().
-
-    id is optional, will 403 if the team does not match the given id.
     """
     if user is None:
         user = ensure_auth()
     team = ctf.team_for_user(user)
-    if id and (team is None or team.id != id):
-        abort(403, 'You are not a member of this team.')
-    elif team is None:
+    if team is None:
         abort(403, 'You must be part of a team.')
     return user.team
 
@@ -130,7 +126,7 @@ def invited_teams():
     })
 
 
-@bp.route('/user/team', methods=['PATCH'])
+@bp.route('/user', methods=['PATCH'])
 def join_team():
     user = ensure_auth()
     team_id = json_value('team', int)
@@ -141,7 +137,7 @@ def join_team():
     return Response(status=204)
 
 
-@bp.route('/user/team', methods=['DELETE'])
+@bp.route('/team', methods=['DELETE'])
 def leave_team():
     user = ensure_auth()
     ensure_team(user=user)
@@ -176,9 +172,15 @@ def get_team(id):
     })
 
 
-@bp.route('/teams/<int:id>', methods=['PATCH'])
-def rename_team(id):
-    team = ensure_team(id=id)
+@bp.route('/team')
+def my_team():
+    team = ensure_team()
+    return get_team(team.id)
+
+
+@bp.route('/team', methods=['PATCH'])
+def rename_team():
+    team = ensure_team()
     name = json_value('name', text_type)
     try:
         team = ctf.rename_team(team, name)
@@ -187,9 +189,9 @@ def rename_team(id):
     return Response(status=204)
 
 
-@bp.route('/teams/<int:id>/members', methods=['POST'])
-def invite_user(id):
-    team = ensure_team(id=id)
+@bp.route('/team/members', methods=['POST'])
+def invite_user():
+    team = ensure_team()
     user = json_value('username', text_type)
     try:
         ctf.create_invite(team, user)
