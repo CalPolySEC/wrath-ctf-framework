@@ -127,7 +127,7 @@ POST /api/teams/
 ### Invite another user to your team
 
 ```http
-POST /api/team
+POST /api/team/members/
 ```
 
 ```json
@@ -185,7 +185,9 @@ HTTP/2.0 204 No Content
 
 ### Leave team
 
-    DELETE /api/team
+```http
+DELETE /api/team
+```
 
 **Response**
 
