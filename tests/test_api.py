@@ -159,7 +159,7 @@ def test_teams(app):
 
         # Name changes, check that it changed
         # Note: h4x0r5 should NOT 409
-        for name in ('Hash Slinging Hackers', 'h4x0r5',
+        for name in ('Hash Slinging Hackers', 'h4x0r5', '😊',
                      'hash slinGING hackers', 'Hash Slinging Hackers'):
             team_req(client.patch, 2, name, key, 204)
             data, status = api_req(client.get, '/api/user', key)
@@ -200,7 +200,7 @@ def test_invites(app):
             return data
 
         key1 = auth(client, 'user1')
-        key2 = auth(client, 'user2')
+        key2 = auth(client, 'user😊')
 
         # Create a team
         data, status = api_req(client.post, '/api/teams/', key1, {
@@ -212,11 +212,13 @@ def test_invites(app):
         # Permissions
         invite_user(key2, 1, 'user1', 403,
                     'You are not a member of this team.')
-        invite_user(key2, 1, 'user2', 403,
+        invite_user(key2, 1, 'user😊', 403,
                     'You are not a member of this team.')
-        invite_user(key1, 1337, 'user2', 403,
+        invite_user(key2, 1, 'fakeuser', 403,
                     'You are not a member of this team.')
-        invite_user(key2, 1337, 'user2', 403,
+        invite_user(key1, 1337, 'user😊', 403,
+                    'You are not a member of this team.')
+        invite_user(key2, 1337, 'user😊', 403,
                     'You are not a member of this team.')
         invite_user(key1, 1, 'abc', 400, 'There is no user with that name.')
         invite_user(key1, 1, 'user1', 400,
@@ -235,8 +237,8 @@ def test_invites(app):
         set_team(key2, 1337, 400, 'You have not been invited to this team.')
 
         # Valid invite
-        invite_user(key1, 1, 'user2', 204)
-        invite_user(key1, 1, 'user2', 400,
+        invite_user(key1, 1, 'user😊', 204)
+        invite_user(key1, 1, 'user😊', 400,
                     'That user has already been invited.')
         set_team(key2, 1, 204)
 
