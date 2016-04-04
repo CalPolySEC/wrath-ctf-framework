@@ -200,13 +200,18 @@ def test_invites(app):
         # Valid invite
         invite_user(key1, 'user😊', 204)
         invite_user(key1, 'user😊', 400, 'That user has already been invited.')
-        set_team(key2, 1, 204)
 
         assert api_req(client.get, '/api/teams/invited/', key2, 200) == {
             'teams': [{
                 'id': 1,
                 'name': 'PPP',
             }],
+        }
+
+        set_team(key2, 1, 204)
+
+        assert api_req(client.get, '/api/teams/invited/', key2, 200) == {
+            'teams': [],
         }
 
         assert api_req(client.get, '/api/user', key2, 200)['team']['id'] == 1

@@ -126,6 +126,7 @@ def join_team(team_id, user):
     if not team or team not in user.invites:
         raise CtfException('You have not been invited to this team.')
     user.team = team
+    user.invites.remove(team)
     db.session.add(user)
     db.session.commit()
 
