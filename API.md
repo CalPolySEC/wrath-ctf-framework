@@ -2,7 +2,9 @@
 
 ### Create a new user
 
-    POST /api/users/
+```http
+POST /api/users/
+```
 
 ```json
 {
@@ -21,7 +23,9 @@
 
 ### Login as a user
 
-    POST /api/sessions/
+```http
+POST /api/sessions/
+```
 
 ```json
 {
@@ -40,7 +44,9 @@
 
 ### View authenticated user
 
-    GET /api/user
+```http
+GET /api/user
+```
 
 **Response**
 
@@ -58,7 +64,9 @@
 
 ### List teams, ranked by score
 
+```http
 GET /api/teams/
+```
 
 **Response**
 
@@ -81,8 +89,10 @@ GET /api/teams/
 
 ### View a team
 
-    GET /api/teams/1
-    GET /api/team
+```http
+GET /api/teams/1
+GET /api/team
+```
 
 **Response**
 
@@ -95,7 +105,9 @@ GET /api/teams/
 
 ### Create a team
 
-    POST /api/teams/
+```http
+POST /api/teams/
+```
 
 ```json
 {
@@ -114,7 +126,9 @@ GET /api/teams/
 
 ### Invite another user to your team
 
-    POST /api/team
+```http
+POST /api/team
+```
 
 ```json
 {
@@ -130,7 +144,9 @@ HTTP/2.0 204 No Content
 
 ### List teams you've been invited to
 
-    POST /api/teams/invited
+```http
+POST /api/teams/invited
+```
 
 ```json
 {
@@ -151,7 +167,9 @@ HTTP/2.0 204 No Content
 
 ### Join a team
 
-    PATCH /api/user
+```http
+PATCH /api/user
+```
 
 ```json
 {
@@ -161,7 +179,9 @@ HTTP/2.0 204 No Content
 
 **Response**
 
-    HTTP/2.0 204 No Content
+```http
+HTTP/2.0 204 No Content
+```
 
 ### Leave team
 
@@ -169,4 +189,6 @@ HTTP/2.0 204 No Content
 
 **Response**
 
-    HTTP/2.0 204 No Content
+```http
+HTTP/2.0 204 No Content
+```
