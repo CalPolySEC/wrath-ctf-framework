@@ -1,17 +1,17 @@
 # Table of Contents
 
 - [Users](#users)
- - [Create a new user](#create-a-new-user)
- - [Login as a user](#login-as-a-user)
- - [View authenticated user](#view-authenticated-user)
+  - [Create a new user](#create-a-new-user)
+  - [Login as a user](#login-as-a-user)
+  - [View authenticated user](#view-authenticated-user)
 - [Teams](#teams)
- - [List teams, ranked by score](#list-teams-ranked-by-score)
- - [View a team](#view-a-team)
- - [Create a team](#create-a-team)
- - [Invite another user to your team](#invite-another-user-to-your-team)
- - [List teams you're invited to](#list-teams-you-re-invited-to)
- - [Join a team](#join-team)
- - [Leave team](#leave-team)
+  - [List teams, ranked by score](#list-teams-ranked-by-score)
+  - [View a team](#view-a-team)
+  - [Create a team](#create-a-team)
+  - [Invite another user to your team](#invite-another-user-to-your-team)
+  - [List teams you're invited to](#list-teams-you-re-invited-to)
+  - [Join a team](#join-a-team)
+  - [Leave team](#leave-team)
 
 # Users
 
