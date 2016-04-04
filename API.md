@@ -9,7 +9,7 @@
   - [View a team](#view-a-team)
   - [Create a team](#create-a-team)
   - [Invite another user to your team](#invite-another-user-to-your-team)
-  - [List teams you're invited to](#list-teams-you-re-invited-to)
+  - [List teams you're invited to](#list-teams-youre-invited-to)
   - [Join a team](#join-a-team)
   - [Leave team](#leave-team)
 
