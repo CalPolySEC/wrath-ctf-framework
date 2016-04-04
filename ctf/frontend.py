@@ -5,7 +5,8 @@ from flask.ext.wtf.csrf import validate_csrf
 from functools import wraps
 from hashlib import sha256
 from sqlalchemy import func
-from werkzeug.exceptions import HTTPException, BadRequest, NotFound, InternalServerError
+from werkzeug.exceptions import HTTPException, BadRequest, NotFound, \
+                                InternalServerError
 from werkzeug.security import safe_str_cmp
 from . import ctf
 from .forms import NewTeamForm, LoginForm
@@ -37,7 +38,8 @@ def require_auth(fn):
     def inner(*args, **kwargs):
         if 'team' not in session:
             flash('You must be logged in to a team to do that.', 'danger')
-            return redirect(url_for('.login_page', next=request.path), code=303)
+            return redirect(url_for('.login_page', next=request.path),
+                            code=303)
         return fn(*args, **kwargs)
     return inner
 

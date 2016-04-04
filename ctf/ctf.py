@@ -74,7 +74,8 @@ def create_user(username, password):
 
 
 def login(username, password):
-    user = User.query.filter(db.func.lower(User.name) == username.lower()).first()
+    user = User.query.filter(db.func.lower(User.name) == username.lower()) \
+                .first()
     if user:
         pw_hash = hashpw(password.encode('utf-8'), user.password)
         if safe_str_cmp(pw_hash, user.password):
@@ -98,7 +99,8 @@ def create_team(user, name):
 
 
 def rename_team(team, name):
-    if Team.query.filter((db.func.lower(Team.name) == name.lower()) & (Team.id != team.id)).count():
+    if Team.query.filter((db.func.lower(Team.name) == name.lower()) &
+                         (Team.id != team.id)).count():
         raise CtfException('That team name is taken.')
     team.name = name
     db.session.add(team)
@@ -106,7 +108,8 @@ def rename_team(team, name):
 
 
 def create_invite(team, username):
-    user = User.query.filter(db.func.lower(User.name) == username.lower()).first()
+    user = User.query.filter(db.func.lower(User.name) == username.lower()) \
+                .first()
     if not user:
         raise CtfException('There is no user with that name.')
     elif user.team == team:

@@ -105,7 +105,7 @@ def test_teams(app):
         assert data['id'] == 1
         for name in ('PPP', 'abc'):
             api_req(client.post, '/api/teams/', key, {'name': name}, 409,
-                     'You are already a member of a team.')
+                    'You are already a member of a team.')
 
         # Get user team
         data = api_req(client.get, '/api/user', key, 200)

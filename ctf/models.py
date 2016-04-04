@@ -3,15 +3,17 @@ from flask.ext.sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
 
-team_level_table = db.Table('team_levels', db.Model.metadata,
-    db.Column('team_id', db.Integer, db.ForeignKey('team.id')),
-    db.Column('level_id', db.Integer, db.ForeignKey('level.id'))
-)
+team_level_table = \
+    db.Table('team_levels', db.Model.metadata,
+             db.Column('team_id', db.Integer, db.ForeignKey('team.id')),
+             db.Column('level_id', db.Integer, db.ForeignKey('level.id'))
+             )
 
-invite_table = db.Table('invites', db.Model.metadata,
-    db.Column('team_id', db.Integer, db.ForeignKey('team.id')),
-    db.Column('user_id', db.Integer, db.ForeignKey('user.id'))
-)
+invite_table = \
+    db.Table('invites', db.Model.metadata,
+             db.Column('team_id', db.Integer, db.ForeignKey('team.id')),
+             db.Column('user_id', db.Integer, db.ForeignKey('user.id'))
+             )
 
 
 class Flag(db.Model):

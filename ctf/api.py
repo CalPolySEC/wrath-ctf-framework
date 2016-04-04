@@ -168,7 +168,7 @@ def get_team(id):
         'flags': {
             category:
             [level.level for level in levels if level in team.levels]
-        for category, levels in categories},
+            for category, levels in categories},
     })
 
 

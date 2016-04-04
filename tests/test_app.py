@@ -5,6 +5,7 @@ import os
 import pytest
 import tempfile
 
+
 @pytest.fixture
 def app():
     os.environ['DATABASE_URL'] = 'sqlite:///%s' % tempfile.mktemp()
@@ -39,19 +40,19 @@ def auth(client):
 
 def test_is_safe_url(app):
     with app.test_request_context('/url'):
-        assert is_safe_url('') == True
-        assert is_safe_url('/') == True
-        assert is_safe_url('/abc') == True
-        assert is_safe_url('/url') == False
-        assert is_safe_url('//example.com') == False
-        assert is_safe_url('http://abc') == False
-        assert is_safe_url('http://example.com') == False
-        assert is_safe_url('http://example.com/abc') == False
-        assert is_safe_url('http://localhost:1234/abc') == False
-        assert is_safe_url('http://localhost/') == False
-        assert is_safe_url('http://localhost') == False
-        assert is_safe_url('ftp://localhost/abc') == False
-        assert is_safe_url('http://localhost/abc') == False
+        assert is_safe_url('')
+        assert is_safe_url('/')
+        assert is_safe_url('/abc')
+        assert not is_safe_url('/url')
+        assert not is_safe_url('//example.com')
+        assert not is_safe_url('http://abc')
+        assert not is_safe_url('http://example.com')
+        assert not is_safe_url('http://example.com/abc')
+        assert not is_safe_url('http://localhost:1234/abc')
+        assert not is_safe_url('http://localhost/')
+        assert not is_safe_url('http://localhost')
+        assert not is_safe_url('ftp://localhost/abc')
+        assert not is_safe_url('http://localhost/abc')
 
 
 def test_error(app):
@@ -158,7 +159,8 @@ def test_login(client):
 def test_logout_unauthed(client):
     rv = client.get('/logout/')
     assert rv.status_code == 303
-    assert rv.headers['Location'] == 'http://localhost/login/?next=%2Flogout%2F'
+    assert rv.headers['Location'] == ('http://localhost/login/'
+                                      '?next=%2Flogout%2F')
 
 
 def test_logout_bad_token(client):
@@ -186,7 +188,8 @@ def test_logout(client):
 def test_submit_page(client):
     rv = client.get('/submit/')
     assert rv.status_code == 303
-    assert rv.headers['Location'] == 'http://localhost/login/?next=%2Fsubmit%2F'
+    assert rv.headers['Location'] == ('http://localhost/login/'
+                                      '?next=%2Fsubmit%2F')
 
     auth(client)
 
