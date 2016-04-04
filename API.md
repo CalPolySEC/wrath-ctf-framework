@@ -157,7 +157,7 @@ POST /api/team/members/
 HTTP/2.0 204 No Content
 ```
 
-### List teams you're been invited to
+### List teams you're invited to
 
 ```http
 POST /api/teams/invited
