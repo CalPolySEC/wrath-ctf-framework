@@ -1,4 +1,4 @@
-from ctf.app import create_app
+from ctf import create_app
 import json
 import os
 import pytest
