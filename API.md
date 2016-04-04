@@ -1,3 +1,18 @@
+# Table of Contents
+
+- [Users](#users)
+ - [Create a new user](#create-a-new-user)
+ - [Login as a user](#login-as-a-user)
+ - [View authenticated user](#view-authenticated-user)
+- [Teams](#teams)
+ - [List teams, ranked by score](#list-teams-ranked-by-score)
+ - [View a team](#view-a-team)
+ - [Create a team](#create-a-team)
+ - [Invite another user to your team](#invite-another-user-to-your-team)
+ - [List teams you're invited to](#list-teams-you-re-invited-to)
+ - [Join a team](#join-team)
+ - [Leave team](#leave-team)
+
 # Users
 
 ### Create a new user
@@ -142,7 +157,7 @@ POST /api/team/members/
 HTTP/2.0 204 No Content
 ```
 
-### List teams you've been invited to
+### List teams you're been invited to
 
 ```http
 POST /api/teams/invited
