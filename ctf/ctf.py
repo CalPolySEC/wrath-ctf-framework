@@ -4,7 +4,8 @@ from bcrypt import gensalt, hashpw
 from datetime import datetime
 from flask import current_app
 from werkzeug.security import safe_str_cmp
-from .models import db, Team, User, Flag, Level, Category
+from .config import ctf_config
+from .models import db, Team, User, Flag
 import hashlib
 import os
 
@@ -15,11 +16,15 @@ class CtfException(Exception):
         self.message = message
 
 
-def has_ended():
-    end = current_app.config['END_TIME_UTC']
-    if end is None:
-        return False
-    return datetime.utcnow() > datetime.strptime(end, '%Y-%m-%dT%H:%M:%S.%fZ')
+def ensure_active():
+    fmt = '%Y-%m-%dT%H:%M:%S.%fZ'
+    now = datetime.utcnow()
+    start = datetime.strptime(ctf_config['start_time'], fmt)
+    end = datetime.strptime(ctf_config['end_time'], fmt)
+    if now < start:
+        raise CtfException('The competition has not started yet.')
+    elif now > end:
+        raise CtfException('The competition has ended, sorry.')
 
 
 def get_teams():
@@ -28,11 +33,6 @@ def get_teams():
 
 def get_team(id):
     return Team.query.filter_by(id=id).first()
-
-
-def get_categories():
-    cat_query = Category.query.order_by(Category.order.asc())
-    return [(cat.name, cat.levels) for cat in cat_query]
 
 
 def create_session_key(user):
@@ -127,8 +127,7 @@ def leave_team(user):
 
 
 def add_flag(fleg, team):
-    if has_ended():
-        raise CtfException('The competition has ended, sorry.')
+    ensure_active()
 
     fleg_hash = hashlib.sha256(fleg.encode('utf-8')).hexdigest()
     db_fleg = Flag.query.filter_by(hash=fleg_hash).first()

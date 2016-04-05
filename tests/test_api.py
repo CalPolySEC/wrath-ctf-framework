@@ -137,7 +137,6 @@ def test_teams(app):
             'id': 1,
             'name': 'PPP',
             'points': 0,
-            'flags': {},
         }
 
         # Can't rename to another team
