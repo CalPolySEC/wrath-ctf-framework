@@ -32,7 +32,7 @@ def json_value(key, desired_type=None):
     return value
 
 
-def ensure_auth():
+def ensure_user():
     header_name = 'X-Session-Key'
     err_msg = 'A valid {0} header is required.'.format(header_name)
     token = request.headers.get(header_name)
@@ -47,12 +47,12 @@ def ensure_auth():
 def ensure_team(user=None):
     """Return the team for the current user, or 403 if there is none.
 
-    user is optional. If omitted, it will be determined from ensure_auth(). Be
+    user is optional. If omitted, it will be determined from ensure_user(). Be
     careful when you supply this parameter, make sure it came from a call to
-    ensure_auth().
+    ensure_user().
     """
     if user is None:
-        user = ensure_auth()
+        user = ensure_user()
     team = ctf.team_for_user(user)
     if team is None:
         abort(403, 'You must be part of a team.')
@@ -87,7 +87,7 @@ def login():
 
 @bp.route('/user')
 def me():
-    user = ensure_auth()
+    user = ensure_user()
     user_obj = {
         'username': user.name,
         'team': None,
@@ -102,7 +102,7 @@ def me():
 
 @bp.route('/teams/', methods=['POST'])
 def create_team():
-    user = ensure_auth()
+    user = ensure_user()
     name = json_value('name', text_type)
     try:
         team = ctf.create_team(user, name)
@@ -116,7 +116,7 @@ def create_team():
 
 @bp.route('/teams/invited/')
 def invited_teams():
-    user = ensure_auth()
+    user = ensure_user()
     teams = user.invites
     return jsonify({
         'teams': [{
@@ -128,7 +128,7 @@ def invited_teams():
 
 @bp.route('/user', methods=['PATCH'])
 def join_team():
-    user = ensure_auth()
+    user = ensure_user()
     team_id = json_value('team', int)
     try:
         ctf.join_team(team_id, user)
@@ -139,7 +139,7 @@ def join_team():
 
 @bp.route('/team', methods=['DELETE'])
 def leave_team():
-    user = ensure_auth()
+    user = ensure_user()
     ensure_team(user=user)
     ctf.leave_team(user)
     return Response(status=204)
