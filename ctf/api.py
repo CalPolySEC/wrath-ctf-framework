@@ -1,6 +1,7 @@
 # JSON Bourne API
-from flask import Blueprint, request, g, abort, Response, jsonify
+from flask import Blueprint, request, current_app, g, abort, Response, jsonify
 from functools import wraps
+from itsdangerous import Signer, BadSignature, want_bytes
 from . import ctf
 from ._compat import text_type
 from .ctf import CtfException
@@ -32,14 +33,21 @@ def json_value(key, desired_type=None):
     return value
 
 
+def get_signer():
+    return Signer(current_app.secret_key, salt='wrath-ctf')
+
+
 def ensure_user():
     header_name = 'X-Session-Key'
     err_msg = 'A valid {0} header is required.'.format(header_name)
-    token = request.headers.get(header_name)
-    if token is None:
+    key = request.headers.get(header_name, '')
+    try:
+        signer = get_signer()
+        token = signer.unsign(key).decode('utf-8')
+    except (BadSignature, ValueError):
         abort(403, err_msg)
     user = ctf.user_for_token(token)
-    if not user:
+    if user is None:
         abort(403, err_msg)
     return user
 
@@ -59,6 +67,13 @@ def ensure_team(user=None):
     return user.team
 
 
+def create_signed_key(user):
+    """Generate a valid auth token for the user, and sign it."""
+    key = ctf.create_session_key(user)
+    signer = get_signer()
+    return signer.sign(want_bytes(key)).decode('ascii')
+
+
 @bp.route('/users/', methods=['POST'])
 def create_user():
     username = json_value('username', text_type)
@@ -69,7 +84,7 @@ def create_user():
         user = ctf.create_user(username, password)
     except CtfException as exc:
         abort(409, exc.message)
-    key = ctf.create_session_key(user.id)
+    key = create_signed_key(user)
     return jsonify({'key': key}), 201
 
 
@@ -81,7 +96,7 @@ def login():
         user = ctf.login(username, password)
     except CtfException as exc:
         abort(403, exc.message)
-    key = ctf.create_session_key(user.id)
+    key = create_signed_key(user)
     return jsonify({'key': key}), 201
 
 

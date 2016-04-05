@@ -86,7 +86,8 @@ def test_user_auth(app):
         key = data['key']
 
         # Simple auth checking
-        for k in (None, '', 'bad.sig', 'fake.TPRM-X0i3azi4DyIqjQy_8jTbHo'):
+        for k in (None, '', 'bad.sig', 'fake.TPRM-X0i3azi4DyIqjQy_8jTbHo',
+                  key[:-1]):
             msg = 'A valid X-Session-Key header is required.'
             api_req(client.get, '/api/user', k, None, 403, msg)
 

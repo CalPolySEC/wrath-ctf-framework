@@ -3,7 +3,6 @@ from base64 import urlsafe_b64encode
 from bcrypt import gensalt, hashpw
 from datetime import datetime
 from flask import current_app
-from itsdangerous import Signer, BadSignature, want_bytes
 from werkzeug.security import safe_str_cmp
 from .models import db, Team, User, Flag, Level, Category
 import hashlib
@@ -36,24 +35,14 @@ def get_categories():
     return [(cat.name, cat.levels) for cat in cat_query]
 
 
-def get_signer(app):
-    return Signer(app.secret_key, salt='wrath-ctf')
-
-
-def create_session_key(user_id):
+def create_session_key(user):
     token = urlsafe_b64encode(os.urandom(24))
-    current_app.redis.set(b'api-token.%s' % token, user_id)
-    signer = get_signer(current_app)
-    return signer.sign(token).decode('ascii')
+    current_app.redis.set(b'api-token.%s' % token, user.id)
+    return token.decode('ascii')  # It better be ascii
 
 
-def user_for_token(session_key):
-    signer = get_signer(current_app)
-    try:
-        token = signer.unsign(session_key)
-    except BadSignature:
-        return None
-    user_id = current_app.redis.get(b'api-token.%s' % token)
+def user_for_token(token):
+    user_id = current_app.redis.get('api-token.%s' % token)
     if not user_id:
         return None
     return User.query.filter_by(id=int(user_id)).first()
