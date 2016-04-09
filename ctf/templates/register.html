@@ -8,7 +8,7 @@
 {% block body %}
     <form method="POST">
       {{ form.hidden_tag() }}
-      <h2>Login</h2>
+      <h2>Register</h2>
       {{ field(form.username, autofocus=True) }}
       {{ field(form.password) }}
       {{ form.submit(class='btn btn-lg btn-primary btn-block') }}

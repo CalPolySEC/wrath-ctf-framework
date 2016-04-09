@@ -3,12 +3,6 @@
 {% block body %}
     <div class="row">
       <div class="col-md-10 col-md-offset-1">
-        {%- if team.id == session.team %}
-        <div class="pull-right password-box">
-          <button id="show-password" class="btn btn-default">Show password</button><br />
-          <code class="password" data-password="{{ team.password }}">{{ '*' * team.password|length }}</code>
-        </div>
-        {%- endif %}
         <h1 class="team-name"><a href="{{ url_for('.team_page', id=team.id) }}">{{ team.name }}</a></h1>
         <div class="points">{{ team.points }} points</div>
         {%- for category, levels in categories %}

@@ -1,15 +1,15 @@
 from datetime import datetime
 from flask import Blueprint, current_app, request, session, abort, redirect, \
-                  render_template, url_for, flash
+                  g, render_template, url_for, flash
 from flask.ext.wtf.csrf import validate_csrf
 from functools import wraps
-from hashlib import sha256
 from sqlalchemy import func
 from werkzeug.exceptions import HTTPException, BadRequest, NotFound, \
                                 InternalServerError
 from werkzeug.security import safe_str_cmp
 from . import ctf
-from .forms import NewTeamForm, LoginForm
+from .ctf import CtfException
+from .forms import CreateForm, LoginForm
 import os
 try:
     from urllib.parse import urlparse
@@ -32,16 +32,27 @@ def snoop_header(response):
     return response
 
 
-def require_auth(fn):
-    """Redirect to the login page if the user is not authenticated."""
-    @wraps(fn)
-    def inner(*args, **kwargs):
-        if 'team' not in session:
-            flash('You must be logged in to a team to do that.', 'danger')
-            return redirect(url_for('.login_page', next=request.path),
-                            code=303)
-        return fn(*args, **kwargs)
-    return inner
+@bp.before_request
+def check_user():
+    g.user = None
+    if 'key' in session:
+        g.user = ctf.user_for_token(session['key'])
+
+
+def ensure_user():
+    if g.user is None:
+        flash('You must be logged in to a team to do that.', 'danger')
+        return redirect(url_for('.login'), next=request.path, code=303)
+    return g.user
+
+
+def ensure_team():
+    user = ensure_user()
+    team = ctf.team_for_user(user)
+    if team is None:
+        abort('You must be part of a team.', 'danger')
+        return redirect(url_for('.home'), code=303)
+    return user.team
 
 
 @bp.route('/')
@@ -51,8 +62,8 @@ def home_page():
 
 
 @bp.route('/submit/')
-@require_auth
 def flag_page():
+    team = ensure_team()
     return render_template('submit.html')
 
 
@@ -66,42 +77,48 @@ def team_page(id):
     return render_template('team.html', team=team, categories=categories)
 
 
+def redirect_next(fallback, **kwargs):
+    url = request.args.get('next')
+    if not url or not is_safe_url(url):
+        url = fallback
+    return redirect(url, **kwargs)
+
+
+@bp.route('/register/', methods=['GET', 'POST'])
+def create_user():
+    form = CreateForm()
+    if form.validate_on_submit():
+        try:
+            user = ctf.create_user(form.username.data, form.password.data)
+        except CtfException as exc:
+            flash(exc.message, 'danger')
+        else:
+            key = ctf.create_session_key(user)
+            session['key'] = key
+            return redirect_next(fallback=url_for('.home_page'), code=303)
+    return render_template('register.html', form=form)
+
+
 @bp.route('/login/', methods=['GET', 'POST'])
-def login_page():
+def login():
     """Log into a team with its password."""
-    login_form = LoginForm(prefix='login')
-    create_form = NewTeamForm(prefix='create')
-    team = None
-
-    if login_form.validate_on_submit() and login_form.submit.data:
-        team = ctf.login_team(login_form.name.data, login_form.password.data)
-        if team:
-            flash('You are now logged in as %s.' % team.name, 'success')
+    form = LoginForm()
+    if form.validate_on_submit():
+        try:
+            user = ctf.login(form.username.data, form.password.data)
+        except CtfException as exc:
+            flash(exc.message, 'danger')
         else:
-            flash('Incorrect team name or password.', 'danger')
-    elif create_form.validate_on_submit() and create_form.submit.data:
-        team = ctf.create_team(create_form.name.data)
-        if team:
-            flash('Team successfully created.', 'success')
-        else:
-            flash('That team name is taken.', 'danger')
-
-    if team:
-        session['team'] = team.id
-        session.permanent = True
-        redirect_url = request.args.get('next')
-        if not redirect_url or not is_safe_url(redirect_url):
-            redirect_url = url_for('.team_page', id=team.id)
-        return redirect(redirect_url, code=303)
-    else:
-        return render_template('login.html', create_form=create_form,
-                               login_form=login_form)
+            key = ctf.create_session_key(user)
+            session['key'] = key
+            return redirect_next(fallback=url_for('.home_page'), code=303)
+    return render_template('login.html', form=form)
 
 
 @bp.route('/logout/')
-@require_auth
 def logout():
     """Clear the session, and redirect to home."""
+    user = ensure_user()
     if not validate_csrf(request.args.get('token')):
         abort(400)
     session.clear()
@@ -115,9 +132,9 @@ def snoopin():
 
 
 @bp.route('/flags', methods=['POST'])
-@require_auth
 def submit_flag():
     """Attempt to submit a flag, and redirect to the flag page."""
+    team = ensure_team()
     fleg = request.form.get('flag', '')
     # Deliver swift justice
     if fleg == 'V375BrzPaT':

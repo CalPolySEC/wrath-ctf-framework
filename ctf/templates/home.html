@@ -1,8 +1,6 @@
 {% extends 'base.html' %}
 {% block body %}
     <div class="center">
-      <h3>Challenges are at <a href="http://overthewire.org/wargames/">OverTheWire.org</a></h3>
-      <br />
       <input id="autoupdate" type="checkbox"{% if request.cookies.get('autoupdate') == '1' %} checked{% endif %}>
       <label for="autoupdate">Auto-update every 30 seconds</label>
     </div>

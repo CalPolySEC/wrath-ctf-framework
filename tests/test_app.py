@@ -1,5 +1,5 @@
 from ctf import create_app
-from ctf.models import db, Team, Flag, Level, Category
+from ctf.models import db, Team, Flag
 from ctf.routes import is_safe_url
 import os
 import pytest
