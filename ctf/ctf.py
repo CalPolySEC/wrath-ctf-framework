@@ -4,7 +4,6 @@ from bcrypt import gensalt, hashpw
 from datetime import datetime
 from flask import current_app
 from werkzeug.security import safe_str_cmp
-from .config import ctf_config
 from .models import db, Team, User, Flag
 import hashlib
 import os
@@ -19,8 +18,8 @@ class CtfException(Exception):
 def ensure_active():
     fmt = '%Y-%m-%dT%H:%M:%S.%fZ'
     now = datetime.utcnow()
-    start = datetime.strptime(ctf_config['start_time'], fmt)
-    end = datetime.strptime(ctf_config['end_time'], fmt)
+    start = datetime.strptime(app.config['CTF_SETTINGS']['start_time'], fmt)
+    end = datetime.strptime(app.config['CTF_SETTINGS']['end_time'], fmt)
     if now < start:
         raise CtfException('The competition has not started yet. Calm down.')
     elif now > end:
@@ -133,7 +132,7 @@ def add_flag(fleg, team):
     db_fleg = Flag.query.filter_by(hash=fleg_hash).first()
 
     if db_fleg is None:
-        raise CtfException('Nope.') # fleg incorrect
+        raise CtfException('Nope.')  # fleg incorrect
     elif db_fleg.level in team.levels:
         raise CtfException('You\'ve already entered that flag.')
 
