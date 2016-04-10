@@ -1,9 +1,7 @@
 WRATH CTF Framework
 ===================
 
-[![Build Status](https://travis-ci.org/DeltaHeavy/wrath-ctf-framework.svg)](https://travis-ci.org/DeltaHeavy/wrath-ctf-framework.svg)
-
-[![Coverage Status](https://coveralls.io/repos/github/DeltaHeavy/wrath-ctf-framework/badge.svg?branch=master)](https://coveralls.io/github/DeltaHeavy/wrath-ctf-framework?branch=master)
+[![Build Status](https://travis-ci.org/DeltaHeavy/wrath-ctf-framework.svg)](https://travis-ci.org/DeltaHeavy/wrath-ctf-framework.svg) [![Coverage Status](https://coveralls.io/repos/github/DeltaHeavy/wrath-ctf-framework/badge.svg?branch=master)](https://coveralls.io/github/DeltaHeavy/wrath-ctf-framework?branch=master)
 
 **What? Really? Another Tiny Homebrewed CTF Framework?**
 
