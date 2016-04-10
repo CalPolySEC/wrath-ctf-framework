@@ -4,6 +4,7 @@ __pycache__
 *.gz
 .cache
 .coverage
+.tox
 venv
 dict.txt
 backup.txt
