@@ -12,7 +12,7 @@ def create_app():
 
     app.config['END_TIME_UTC'] = os.environ.get('END_TIME_UTC')
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'not secure brah')
-    app.config['WTF_CSRF_CHECK_DEFAULT'] = False
+    app.config['WTF_CSRF_CHECK_DEFAULT'] = True
     app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL',
                                                            'sqlite:///test.db')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
