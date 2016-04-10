@@ -1,6 +1,8 @@
 WRATH CTF Framework
 ===================
 
+[![Coverage Status](https://coveralls.io/repos/github/DeltaHeavy/wrath-ctf-framework/badge.svg?branch=master)](https://coveralls.io/github/DeltaHeavy/wrath-ctf-framework?branch=master)
+
 **What? Really? Another Tiny Homebrewed CTF Framework?**
 
 This simple flask webapp takes password submission from teams, tallies score totals, and presents a leaderboard
