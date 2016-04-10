@@ -65,8 +65,9 @@ def login(username, password):
     user = User.query.filter(db.func.lower(User.name) == username.lower()) \
                 .first()
     if user:
-        pw_hash = hashpw(password.encode('utf-8'), user.password)
-        if safe_str_cmp(pw_hash, user.password):
+        correct = user.password.encode('utf-8')
+        pw_hash = hashpw(password.encode('utf-8'), correct)
+        if safe_str_cmp(pw_hash, correct):
             return user
     else:
         # Break timing attacks
