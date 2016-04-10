@@ -35,9 +35,9 @@ def get_team(id):
 
 
 def create_session_key(user):
-    token = urlsafe_b64encode(os.urandom(24))
-    current_app.redis.set(b'api-token.%s' % token, user.id)
-    return token.decode('ascii')  # It better be ascii
+    token = urlsafe_b64encode(os.urandom(24)).decode('ascii')
+    current_app.redis.set(u'api-token.%s' % token, user.id)
+    return token
 
 
 def user_for_token(token):
