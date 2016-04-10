@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from ctf import create_app
 import fakeredis
 import json
