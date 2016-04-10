@@ -149,7 +149,7 @@ def test_teams(app):
 
         # Name changes, check that it changed
         # Note: h4x0r5 should NOT 409
-        for name in ('Hash Slinging Hackers', 'h4x0r5', '😊',
+        for name in ('Hash Slinging Hackers', 'h4x0r5', u'😊',
                      'hash slinGING hackers', 'Hash Slinging Hackers'):
             api_req(client.patch, '/api/team', key, {'name': name}, 204)
             data = api_req(client.get, '/api/user', key, None, 200)
