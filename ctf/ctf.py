@@ -4,6 +4,7 @@ from bcrypt import gensalt, hashpw
 from datetime import datetime
 from flask import current_app
 from werkzeug.security import safe_str_cmp
+from ._compat import want_bytes
 from .models import db, Team, User, Flag
 import hashlib
 import os
@@ -54,7 +55,7 @@ def team_for_user(user):
 def create_user(username, password):
     if User.query.filter(db.func.lower(User.name) == username.lower()).count():
         raise CtfException('That username is taken.')
-    pw_hash = hashpw(password.encode('utf-8'), gensalt())
+    pw_hash = hashpw(want_bytes(password), gensalt())
     user = User(name=username, password=pw_hash)
     db.session.add(user)
     db.session.commit()
@@ -65,13 +66,13 @@ def login(username, password):
     user = User.query.filter(db.func.lower(User.name) == username.lower()) \
                 .first()
     if user:
-        correct = user.password.encode('utf-8')
-        pw_hash = hashpw(password.encode('utf-8'), correct)
+        correct = want_bytes(user.password)
+        pw_hash = hashpw(want_bytes(password), correct)
         if safe_str_cmp(pw_hash, correct):
             return user
     else:
         # Break timing attacks
-        hashpw(password.encode('utf-8'), gensalt())
+        hashpw(want_bytes(password), gensalt())
     raise CtfException('Incorrect username or password.')
 
 
@@ -129,7 +130,7 @@ def leave_team(user):
 def add_flag(fleg, team):
     ensure_active()
 
-    fleg_hash = hashlib.sha256(fleg.encode('utf-8')).hexdigest()
+    fleg_hash = hashlib.sha256(want_bytes(fleg)).hexdigest()
     db_fleg = Flag.query.filter_by(hash=fleg_hash).first()
 
     if db_fleg is None:
