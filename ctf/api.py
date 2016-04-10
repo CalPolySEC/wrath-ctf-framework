@@ -1,4 +1,4 @@
-# JSON Bourne API
+""" JSON Bourne API """
 from flask import Blueprint, request, current_app, g, abort, Response, jsonify
 from functools import wraps
 from itsdangerous import Signer, BadSignature, want_bytes
