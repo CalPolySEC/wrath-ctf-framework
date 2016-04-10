@@ -29,15 +29,13 @@ It needs to contain
 Development Environment
 -----------------------
 
-**bash/zsh**
-
 Here's how to get a local copy up and running:
 
 ```
-    virtualenv venv
-    source venv/bin/activate # . venv/bin/activate.fish on fish
-    pip install -r requirements.txt
-    python scripts/build_db.py
+virtualenv venv
+source venv/bin/activate # (. venv/bin/activate.fish on fish)
+pip install -r requirements.txt
+python scripts/build_db.py
 ```
 
 And to run the app:
