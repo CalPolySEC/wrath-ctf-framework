@@ -17,3 +17,5 @@ matrix:
     env: TOXENV=py26
 install: pip install tox
 script: tox
+notifications:
+    email: false
