@@ -22,9 +22,9 @@ def ensure_active():
     start = datetime.strptime(ctf_config['start_time'], fmt)
     end = datetime.strptime(ctf_config['end_time'], fmt)
     if now < start:
-        raise CtfException('The competition has not started yet.')
+        raise CtfException('The competition has not started yet. Calm down.')
     elif now > end:
-        raise CtfException('The competition has ended, sorry.')
+        raise CtfException('The competition has ended!')
 
 
 def get_teams():
@@ -133,7 +133,7 @@ def add_flag(fleg, team):
     db_fleg = Flag.query.filter_by(hash=fleg_hash).first()
 
     if db_fleg is None:
-        raise CtfException('Sorry, the flag you entered is not correct.')
+        raise CtfException('Nope.') # fleg incorrect
     elif db_fleg.level in team.levels:
         raise CtfException('You\'ve already entered that flag.')
 
