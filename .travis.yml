@@ -13,8 +13,6 @@ matrix:
     env: TOXENV=py27,coveralls
   - python: 2.7
     env: TOXENV=py27-devel
-  - python: 2.7
-    env: TOXENV=py27-lowest
   - python: 2.6
     env: TOXENV=py26
 install: pip install tox
