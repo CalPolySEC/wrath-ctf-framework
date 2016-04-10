@@ -10,11 +10,9 @@ This simple flask webapp takes password submission from teams, tallies score tot
 
 Todo
 ----
-* Statistics on how many have completed each challenge in each of the three modules
-* Generate report.html containing visualizations of difficulty, success, challenge popularity, completion speed, etc
+* Statistics and visualizations of difficulty, success, challenge popularity, completion speed, etc
+* Email/deliverable of the stats and visualizations at end of ctf
 * Time remaining til CTF end (auto-close challenges)
-* Genericize (make is plug-n-play-able for any ctf with a simple config file, json, or whatever)
-* Fix code inconsistencies
 * Stop Snoopin
 * Flag -> Fleg
 
