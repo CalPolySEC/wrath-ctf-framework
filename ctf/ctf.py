@@ -5,7 +5,7 @@ from datetime import datetime
 from flask import current_app
 from werkzeug.security import safe_str_cmp
 from ._compat import want_bytes
-from .models import db, Team, User, Flag
+from .models import db, Team, User, Fleg
 import hashlib
 import os
 
@@ -28,7 +28,7 @@ def ensure_active():
 
 
 def get_teams():
-    return Team.query.order_by(Team.points.desc(), Team.last_flag).all()
+    return Team.query.order_by(Team.points.desc(), Team.last_fleg).all()
 
 
 def get_team(id):
@@ -127,11 +127,11 @@ def leave_team(user):
     db.session.commit()
 
 
-def add_flag(fleg, team):
+def add_fleg(fleg, team):
     ensure_active()
 
     fleg_hash = hashlib.sha256(want_bytes(fleg)).hexdigest()
-    db_fleg = Flag.query.filter_by(hash=fleg_hash).first()
+    db_fleg = Fleg.query.filter_by(hash=fleg_hash).first()
 
     if db_fleg is None:
         raise CtfException('Nope.')  # fleg incorrect
@@ -140,7 +140,7 @@ def add_flag(fleg, team):
 
     team.levels.append(db_fleg.level)
     team.points += db_fleg.level.points
-    team.last_flag = db.func.now()
+    team.last_fleg = db.func.now()
     db.session.add(team)
     db.session.commit()
 

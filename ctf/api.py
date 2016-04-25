@@ -211,11 +211,11 @@ def invite_user():
 
 
 @bp.route('/flags/', methods=['POST'])
-def submit_flag():
+def submit_fleg():
     team = ensure_team()
     fleg = json_value('flag', text_type)
     try:
-        db_fleg = ctf.add_flag(fleg, team)
+        db_fleg = ctf.add_fleg(fleg, team)
     except CtfException as exc:
         abort(400, exc.message)
     return jsonify({'points_earned': db_fleg.level.points}), 201

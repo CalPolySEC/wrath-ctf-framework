@@ -1,5 +1,5 @@
 """from ctf import create_app
-from ctf.models import db, Team, Flag
+from ctf.models import db, Team, Fleg
 from ctf.routes import is_safe_url
 import os
 import pytest
@@ -209,11 +209,11 @@ def test_justice(client):
     assert 'youtube.com' in rv.headers['Location']
 
 
-def test_flag_submission(client):
+def test_fleg_submission(client):
     token = get_token(client)
 
-    def assert_flag(flag, msg):
-        rv = client.post('/flags', data={'flag': flag, 'token': token})
+    def assert_fleg(fleg, msg):
+        rv = client.post('/flags', data={'flag': fleg, 'token': token})
         assert rv.status_code == 303
         assert rv.headers['Location'] == 'http://localhost/submit/'
         assert msg in client.get('/').data
@@ -226,9 +226,9 @@ def test_flag_submission(client):
     level1 = Level(points=10, category=bandit, level=0)
     level2 = Level(points=20, category=bandit, level=1)
     level3 = Level(points=10, category=leviathan, level=0)
-    fleg1 = Flag(hash=sha1, level=level1)
-    fleg2 = Flag(hash=sha2, level=level2)
-    fleg3 = Flag(hash='whatever', level=level3)
+    fleg1 = Fleg(hash=sha1, level=level1)
+    fleg2 = Fleg(hash=sha2, level=level2)
+    fleg3 = Fleg(hash='whatever', level=level3)
     db.session.add(bandit)
     db.session.add(leviathan)
     db.session.add(fleg1)
@@ -241,16 +241,16 @@ def test_flag_submission(client):
     rv = client.get('/')
     assert b'<td>0</td>' in rv.data
 
-    assert_flag('fleg2', b'You must complete all previous challenges first!')
-    assert_flag('abc', b'Sorry, the flag you entered is not correct.')
-    assert_flag('fleg1', b'Correct! You have earned 10 points for your team.')
-    assert_flag('fleg1', b'You&#39;ve already entered that flag.')
+    assert_fleg('fleg2', b'You must complete all previous challenges first!')
+    assert_fleg('abc', b'Sorry, the flag you entered is not correct.')
+    assert_fleg('fleg1', b'Correct! You have earned 10 points for your team.')
+    assert_fleg('fleg1', b'You&#39;ve already entered that flag.')
 
     rv = client.get('/')
     assert b'<td>10</td>' in rv.data
 
-    assert_flag('fleg2', b'Correct! You have earned 20 points for your team.')
-    assert_flag('fleg2', b'You&#39;ve already entered that flag.')
+    assert_fleg('fleg2', b'Correct! You have earned 20 points for your team.')
+    assert_fleg('fleg2', b'You&#39;ve already entered that flag.')
 
     rv = client.get('/')
     assert b'<td>30</td>' in rv.data

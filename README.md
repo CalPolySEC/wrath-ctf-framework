@@ -15,7 +15,6 @@ Todo
 * Email/deliverable of the stats and visualizations at end of ctf
 * Time remaining til CTF end (auto-close challenges)
 * Stop Snoopin
-* Flag -> Fleg
 
 Adding Challenges
 -----------------

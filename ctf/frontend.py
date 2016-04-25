@@ -62,7 +62,7 @@ def home_page():
 
 
 @bp.route('/submit/')
-def flag_page():
+def fleg_page():
     team = ensure_team()
     return render_template('submit.html')
 
@@ -132,19 +132,19 @@ def snoopin():
 
 
 @bp.route('/flags', methods=['POST'])
-def submit_flag():
-    """Attempt to submit a flag, and redirect to the flag page."""
+def submit_fleg():
+    """Attempt to submit a fleg, and redirect to the fleg page."""
     team = ensure_team()
     fleg = request.form.get('flag', '')
     # Deliver swift justice
     if fleg == 'V375BrzPaT':
         return snoopin()
 
-    db_flag, err_msg = ctf.add_flag(fleg, session['team'])
-    if db_flag is None:
+    db_fleg, err_msg = ctf.add_fleg(fleg, session['team'])
+    if db_fleg is None:
         flash(err_msg, 'danger')
     else:
         flash('Correct! You have earned {0:d} points for your team.'
-              .format(db_flag.level.points), 'success')
+              .format(db_fleg.level.points), 'success')
 
-    return redirect(url_for('.flag_page'), code=303)
+    return redirect(url_for('.fleg_page'), code=303)

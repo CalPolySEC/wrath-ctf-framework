@@ -5,7 +5,7 @@ import hashlib
 import sys
 sys.path.extend('..') # jesus
 from ctf.app import create_app
-from ctf.models import db, Category, Flag, Level, Team
+from ctf.models import db, Category, Fleg, Level, Team
 
 TEST_CATEGORIES = [('Bandit', 26), ('Leviathan', 7), ('Lock Picking', 0), ('Teardown', 0)]
 
@@ -19,9 +19,9 @@ def main():
             db.session.add(c)
             for level in range(levels + 1):
                 lev = Level(category=c, level=level, points=10)
-                flag = Flag(hash=hashlib.sha256(b'%s %d' % (cat.encode(), level)).hexdigest(), level=lev)
+                fleg = Fleg(hash=hashlib.sha256(b'%s %d' % (cat.encode(), level)).hexdigest(), level=lev)
                 db.session.add(lev)
-                db.session.add(flag)
+                db.session.add(fleg)
         db.session.commit()
     return 0
 

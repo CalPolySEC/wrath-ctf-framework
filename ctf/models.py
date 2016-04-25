@@ -26,15 +26,15 @@ class Team(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(128), unique=True)
     points = db.Column(db.Integer, default=0)
-    last_flag = db.Column(db.DateTime, server_default=db.func.now())
+    last_fleg = db.Column(db.DateTime, server_default=db.func.now())
     invited = db.relationship('User', secondary=invite_table)
 
 
-class Flag(db.Model):
+class Fleg(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    user = db.relationship('User', backref='flags')
+    user = db.relationship('User', backref='flegs')
     team_id = db.Column(db.Integer, db.ForeignKey('team.id'))
-    team = db.relationship('Team', backref='flags')
+    team = db.relationship('Team', backref='flegs')
     points = db.Column(db.Integer)
     earned_on = db.Column(db.DateTime, server_default=db.func.now())

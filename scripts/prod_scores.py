@@ -7,7 +7,7 @@ import subprocess
 # This here is a hack
 import sys
 sys.path.extend('..')
-from app import db, Category, Flag, Level, Team
+from app import db, Category, Fleg, Level, Team
 
 
 def load_passwords(in_file):
@@ -40,9 +40,9 @@ def main(argv):
         passwords = load_passwords(pw_file)
         db.create_all()
         db.session.add(cat)
-        for lev, flag_hash in passwords:
-            flag = Flag(hash=flag_hash, level=levels[lev])
-            db.session.add(flag)
+        for lev, fleg_hash in passwords:
+            fleg = Fleg(hash=fleg_hash, level=levels[lev])
+            db.session.add(fleg)
         db.session.commit()
         return 0
 
