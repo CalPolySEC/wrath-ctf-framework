@@ -2,9 +2,9 @@
 from flask import Blueprint, request, current_app, g, abort, Response, jsonify
 from functools import wraps
 from itsdangerous import Signer, BadSignature, want_bytes
-from . import ctf
+from . import core
 from ._compat import text_type
-from .ctf import CtfException
+from .core import CtfException
 
 
 bp = Blueprint('api', __name__)
@@ -46,7 +46,7 @@ def ensure_user():
         token = signer.unsign(key).decode('utf-8')
     except (BadSignature, ValueError):
         abort(403, err_msg)
-    user = ctf.user_for_token(token)
+    user = core.user_for_token(token)
     if user is None:
         abort(403, err_msg)
     return user
@@ -61,7 +61,7 @@ def ensure_team(user=None):
     """
     if user is None:
         user = ensure_user()
-    team = ctf.team_for_user(user)
+    team = core.team_for_user(user)
     if team is None:
         abort(403, 'You must be part of a team.')
     return user.team
@@ -69,7 +69,7 @@ def ensure_team(user=None):
 
 def create_signed_key(user):
     """Generate a valid auth token for the user, and sign it."""
-    key = ctf.create_session_key(user)
+    key = core.create_session_key(user)
     signer = get_signer()
     return signer.sign(want_bytes(key)).decode('ascii')
 
@@ -81,7 +81,7 @@ def create_user():
     if not username or not password:
         abort(400, 'You must supply a username and password.')
     try:
-        user = ctf.create_user(username, password)
+        user = core.create_user(username, password)
     except CtfException as exc:
         abort(409, exc.message)
     key = create_signed_key(user)
@@ -93,7 +93,7 @@ def login():
     username = json_value('username', text_type)
     password = json_value('password', text_type)
     try:
-        user = ctf.login(username, password)
+        user = core.login(username, password)
     except CtfException as exc:
         abort(403, exc.message)
     key = create_signed_key(user)
@@ -120,7 +120,7 @@ def create_team():
     user = ensure_user()
     name = json_value('name', text_type)
     try:
-        team = ctf.create_team(user, name)
+        team = core.create_team(user, name)
     except CtfException as exc:
         abort(409, exc.message)
     return jsonify({
@@ -146,7 +146,7 @@ def join_team():
     user = ensure_user()
     team_id = json_value('team', int)
     try:
-        ctf.join_team(team_id, user)
+        core.join_team(team_id, user)
     except CtfException as exc:
         abort(400, exc.message)
     return Response(status=204)
@@ -156,13 +156,13 @@ def join_team():
 def leave_team():
     user = ensure_user()
     ensure_team(user=user)
-    ctf.leave_team(user)
+    core.leave_team(user)
     return Response(status=204)
 
 
 @bp.route('/teams/')
 def leaderboard():
-    teams = ctf.get_teams()
+    teams = core.get_teams()
     return jsonify({
         'teams': [{
             'id': team.id,
@@ -174,7 +174,7 @@ def leaderboard():
 
 @bp.route('/teams/<int:id>')
 def get_team(id):
-    team = ctf.get_team(id)
+    team = core.get_team(id)
     return jsonify({
         'id': team.id,
         'name': team.name,
@@ -193,7 +193,7 @@ def rename_team():
     team = ensure_team()
     name = json_value('name', text_type)
     try:
-        team = ctf.rename_team(team, name)
+        team = core.rename_team(team, name)
     except CtfException as exc:
         abort(409, exc.message)
     return Response(status=204)
@@ -204,7 +204,7 @@ def invite_user():
     team = ensure_team()
     user = json_value('username', text_type)
     try:
-        ctf.create_invite(team, user)
+        core.create_invite(team, user)
     except CtfException as exc:
         abort(400, exc.message)
     return Response(status=204)
@@ -215,7 +215,7 @@ def submit_fleg():
     team = ensure_team()
     fleg = json_value('flag', text_type)
     try:
-        db_fleg = ctf.add_fleg(fleg, team)
+        db_fleg = core.add_fleg(fleg, team)
     except CtfException as exc:
         abort(400, exc.message)
     return jsonify({'points_earned': db_fleg.level.points}), 201

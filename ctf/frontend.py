@@ -7,8 +7,8 @@ from sqlalchemy import func
 from werkzeug.exceptions import HTTPException, BadRequest, NotFound, \
                                 InternalServerError
 from werkzeug.security import safe_str_cmp
-from . import ctf
-from .ctf import CtfException
+from . import core
+from .core import CtfException
 from .forms import CreateForm, LoginForm
 import os
 try:
@@ -36,7 +36,7 @@ def snoop_header(response):
 def check_user():
     g.user = None
     if 'key' in session:
-        g.user = ctf.user_for_token(session['key'])
+        g.user = core.user_for_token(session['key'])
 
 
 def ensure_user():
@@ -48,7 +48,7 @@ def ensure_user():
 
 def ensure_team():
     user = ensure_user()
-    team = ctf.team_for_user(user)
+    team = core.team_for_user(user)
     if team is None:
         abort('You must be part of a team.', 'danger')
         return redirect(url_for('.home'), code=303)
@@ -57,7 +57,7 @@ def ensure_team():
 
 @bp.route('/')
 def home_page():
-    teams = ctf.get_teams()
+    teams = core.get_teams()
     return render_template('home.html', teams=teams)
 
 
@@ -70,10 +70,10 @@ def fleg_page():
 @bp.route('/teams/<int:id>/')
 def team_page(id):
     """Get the page for a specific team."""
-    team = ctf.get_team(id)
+    team = core.get_team(id)
     if not team:
         abort(404)
-    categories = ctf.get_categories()
+    categories = core.get_categories()
     return render_template('team.html', team=team, categories=categories)
 
 
@@ -89,11 +89,11 @@ def create_user():
     form = CreateForm()
     if form.validate_on_submit():
         try:
-            user = ctf.create_user(form.username.data, form.password.data)
+            user = core.create_user(form.username.data, form.password.data)
         except CtfException as exc:
             flash(exc.message, 'danger')
         else:
-            key = ctf.create_session_key(user)
+            key = core.create_session_key(user)
             session['key'] = key
             return redirect_next(fallback=url_for('.home_page'), code=303)
     return render_template('register.html', form=form)
@@ -105,11 +105,11 @@ def login():
     form = LoginForm()
     if form.validate_on_submit():
         try:
-            user = ctf.login(form.username.data, form.password.data)
+            user = core.login(form.username.data, form.password.data)
         except CtfException as exc:
             flash(exc.message, 'danger')
         else:
-            key = ctf.create_session_key(user)
+            key = core.create_session_key(user)
             session['key'] = key
             return redirect_next(fallback=url_for('.home_page'), code=303)
     return render_template('login.html', form=form)
@@ -140,7 +140,7 @@ def submit_fleg():
     if fleg == 'V375BrzPaT':
         return snoopin()
 
-    db_fleg, err_msg = ctf.add_fleg(fleg, session['team'])
+    db_fleg, err_msg = core.add_fleg(fleg, session['team'])
     if db_fleg is None:
         flash(err_msg, 'danger')
     else:
