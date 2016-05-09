@@ -1,10 +1,10 @@
 from flask import Flask, render_template
 from flask.ext.wtf.csrf import CsrfProtect
-from redis import StrictRedis
-from werkzeug.exceptions import HTTPException, InternalServerError
+from werkzeug import exceptions
 from . import api, frontend
 from .models import db
 import os
+import redis
 
 
 def create_app():
@@ -17,7 +17,7 @@ def create_app():
                                                            'sqlite:///test.db')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-    app.redis = StrictRedis()
+    app.redis = redis.StrictRedis()
 
     CsrfProtect(app)
     db.init_app(app)
@@ -26,15 +26,13 @@ def create_app():
     def create_db():
         db.create_all()
 
-    @app.errorhandler(400)
-    @app.errorhandler(403)
-    @app.errorhandler(404)
-    @app.errorhandler(405)
-    @app.errorhandler(500)
     def handle_error(exc):
-        if not isinstance(exc, HTTPException):
-            exc = InternalServerError()
+        if not isinstance(exc, exceptions.HTTPException):
+            exc = exceptions.InternalServerError()
         return render_template('error.html', error=exc), exc.code
+
+    for code in exceptions.default_exceptions.keys():
+        app.register_error_handler(code, handle_error)
 
     app.register_blueprint(frontend.bp)
     app.register_blueprint(api.bp, url_prefix='/api')

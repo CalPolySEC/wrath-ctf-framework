@@ -2,6 +2,7 @@
 from flask import Blueprint, request, current_app, g, abort, Response, jsonify
 from functools import wraps
 from itsdangerous import Signer, BadSignature, want_bytes
+from werkzeug import exceptions
 from . import core
 from ._compat import text_type
 from .core import CtfException
@@ -10,12 +11,12 @@ from .core import CtfException
 bp = Blueprint('api', __name__)
 
 
-@bp.errorhandler(400)
-@bp.errorhandler(403)
-@bp.errorhandler(404)
-@bp.errorhandler(409)
 def handle_error(exc):
     return jsonify({'message': exc.description}), exc.code
+
+for code in exceptions.default_exceptions.keys():
+    if code != 500:
+        bp.errorhandler(code)(handle_error)
 
 
 def json_value(key, desired_type=None):
