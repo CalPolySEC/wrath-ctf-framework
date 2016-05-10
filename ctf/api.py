@@ -14,6 +14,7 @@ bp = Blueprint('api', __name__)
 def handle_error(exc):
     return jsonify({'message': exc.description}), exc.code
 
+
 for code in exceptions.default_exceptions.keys():
     if code != 500:
         bp.errorhandler(code)(handle_error)

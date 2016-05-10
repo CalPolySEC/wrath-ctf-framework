@@ -87,6 +87,7 @@ def redirect_next(fallback, **kwargs):
 @bp.route('/register/', methods=['GET', 'POST'])
 def create_user():
     form = CreateForm()
+
     if form.validate_on_submit():
         try:
             user = core.create_user(form.username.data, form.password.data)

@@ -1,6 +1,6 @@
-"""from ctf import create_app
+from ctf import create_app
 from ctf.models import db, Team, Fleg
-from ctf.routes import is_safe_url
+from ctf.frontend import is_safe_url
 import os
 import pytest
 import tempfile
@@ -60,10 +60,14 @@ def test_error(app):
     def cause_a_problem():
         1 / 0
 
+    @app.route('/post', methods=['POST'])
+    def post_only():
+        return 'OK\n'
+
     app.debug = False
 
     with app.test_client() as client:
-        for url, code in (('/asdf', 404), ('/teams', 405), ('/internal', 500)):
+        for url, code in (('/asdf', 404), ('/post', 405), ('/internal', 500)):
             rv = client.get(url)
             assert b'https://http.cat/%d' % code in rv.data
             assert rv.status_code == code
@@ -82,7 +86,9 @@ def test_team_404(client):
 
 
 def test_bad_csrf(client):
-    rv = client.post('/teams', data={'name': 'My team name'})
+    client.get('/register/')
+
+    rv = client.post('/register/', data={'name': 'My team name'})
     assert rv.status_code == 400
     assert b'Missing or incorrect CSRF token.' in rv.data
 
@@ -254,4 +260,3 @@ def test_fleg_submission(client):
 
     rv = client.get('/')
     assert b'<td>30</td>' in rv.data
-"""

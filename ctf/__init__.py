@@ -1,5 +1,4 @@
 from flask import Flask, render_template
-from flask.ext.wtf.csrf import CsrfProtect
 from werkzeug import exceptions
 from . import api, frontend
 from .models import db
@@ -19,7 +18,6 @@ def create_app():
 
     app.redis = redis.StrictRedis()
 
-    CsrfProtect(app)
     db.init_app(app)
 
     @app.before_first_request
