@@ -63,6 +63,7 @@ def create_user(username, password):
 
 
 def login(username, password):
+    dummy_salt = gensalt()
     user = User.query.filter(db.func.lower(User.name) == username.lower()) \
                 .first()
     if user:
@@ -71,8 +72,8 @@ def login(username, password):
         if safe_str_cmp(pw_hash, correct):
             return user
     else:
-        # Break timing attacks
-        hashpw(want_bytes(password), gensalt())
+        # Defeat username discovery
+        hashpw(want_bytes(password), dummy_salt)
     raise CtfException('Incorrect username or password.')
 
 
