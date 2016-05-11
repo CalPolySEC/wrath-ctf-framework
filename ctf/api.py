@@ -1,14 +1,15 @@
-""" JSON Bourne API """
+"""JSON Bourne API"""
 from flask import Blueprint, request, current_app, g, abort, Response, jsonify
 from functools import wraps
 from itsdangerous import Signer, BadSignature, want_bytes
 from werkzeug import exceptions
-from . import core
+from . import core, ext
 from ._compat import text_type
 from .core import CtfException
 
 
 bp = Blueprint('api', __name__)
+ext.csrf.exempt(bp)
 
 
 def handle_error(exc):

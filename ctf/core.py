@@ -5,7 +5,8 @@ from datetime import datetime
 from flask import current_app
 from werkzeug.security import safe_str_cmp
 from ._compat import want_bytes
-from .models import db, Team, User, Fleg
+from .ext import db
+from .models import Team, User, Fleg
 import hashlib
 import os
 
@@ -65,7 +66,7 @@ def create_user(username, password):
 def login(username, password):
     dummy_salt = gensalt()
     user = User.query.filter(db.func.lower(User.name) == username.lower()) \
-                .first()
+        .first()
     if user:
         correct = want_bytes(user.password)
         pw_hash = hashpw(want_bytes(password), correct)

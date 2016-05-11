@@ -1,7 +1,4 @@
-from flask.ext.sqlalchemy import SQLAlchemy
-
-
-db = SQLAlchemy()
+from .ext import db
 
 
 invite_table = \

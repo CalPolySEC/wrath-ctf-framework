@@ -1,6 +1,6 @@
 from flask import Flask, render_template
 from werkzeug import exceptions
-from . import api, frontend
+from . import api, frontend, ext
 from .models import db
 import os
 import redis
@@ -11,14 +11,15 @@ def create_app():
 
     app.config['END_TIME_UTC'] = os.environ.get('END_TIME_UTC')
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'not secure brah')
-    app.config['WTF_CSRF_CHECK_DEFAULT'] = False
     app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL',
                                                            'sqlite:///test.db')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     app.redis = redis.StrictRedis()
 
-    db.init_app(app)
+    # Setup extensions
+    ext.db.init_app(app)
+    ext.csrf.init_app(app)
 
     @app.before_first_request
     def create_db():
