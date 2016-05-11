@@ -74,7 +74,7 @@ def test_error(app):
     with app.test_client() as client:
         for url, code in (('/asdf', 404), ('/post', 405), ('/internal', 500)):
             rv = client.get(url)
-            assert b'https://http.cat/%d' % code in rv.data
+            assert b'https://http.cat/' + str(code).encode() in rv.data
             assert rv.status_code == code
 
 
