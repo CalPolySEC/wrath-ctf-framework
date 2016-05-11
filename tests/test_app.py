@@ -1,6 +1,7 @@
 from ctf import core, create_app
 from ctf.ext import db
 from ctf.frontend import is_safe_url
+import fakeredis
 import os
 import pytest
 import tempfile
@@ -10,9 +11,9 @@ import tempfile
 def app():
     os.environ['DATABASE_URL'] = 'sqlite:///%s' % tempfile.mktemp()
     app = create_app()
+    app.redis = fakeredis.FakeRedis()
+    app.secret_key = 'my secret key'
     app.debug = True
-    with app.test_request_context():
-        db.create_all()
     return app
 
 
@@ -30,6 +31,7 @@ def get_token(client):
 
 def auth(client):
     with client.application.test_request_context('/'):
+        db.create_all()
         user = core.create_user('Abc', 'def')
         db.session.add(user)
         db.session.commit()
