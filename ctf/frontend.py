@@ -1,20 +1,11 @@
-from datetime import datetime
-from flask import Blueprint, current_app, request, session, abort, redirect, \
-                  g, render_template, url_for, flash
-from flask.ext.wtf.csrf import validate_csrf
 from functools import wraps
-from sqlalchemy import func
-from werkzeug.exceptions import HTTPException, BadRequest, NotFound, \
-                                InternalServerError
-from werkzeug.security import safe_str_cmp
-from . import core, ext
+from flask import Blueprint, request, session, abort, redirect, \
+                  render_template, url_for, flash
+from flask.ext.wtf.csrf import validate_csrf
+from . import core
+from ._compat import urlparse
 from .core import CtfException
 from .forms import CreateForm, LoginForm
-import os
-try:
-    from urllib.parse import urlparse
-except ImportError:
-    from urlparse import urlparse
 
 
 bp = Blueprint('frontend', __name__)
@@ -26,12 +17,6 @@ def is_safe_url(url):
     return u.scheme == '' and u.netloc == '' and u.path != request.path
 
 
-@bp.after_request
-def snoop_header(response):
-    response.headers['X-Snoop-Options'] = 'nosnoop'
-    return response
-
-
 def ensure_user(fn):
     @wraps(fn)
     def inner(*args, **kwargs):
@@ -41,7 +26,7 @@ def ensure_user(fn):
         if user is None:
             flash('You must be logged in to a team to do that.', 'danger')
             return redirect(url_for('.login', next=request.path), code=303)
-        return fn(user)
+        return fn(user, *args, **kwargs)
     return inner
 
 
@@ -51,9 +36,9 @@ def ensure_team(fn):
     def inner(user, *args, **kwargs):
         team = core.team_for_user(user)
         if team is None:
-            abort('You must be part of a team.', 'danger')
-            return redirect(url_for('.home'), code=303)
-        return fn(user.team)
+            flash('You must be part of a team.', 'danger')
+            return redirect(url_for('.home_page'), code=303)
+        return fn(user.team, *args, **kwargs)
     return inner
 
 
@@ -88,17 +73,19 @@ def redirect_next(fallback, **kwargs):
 
 @bp.route('/register/', methods=['GET', 'POST'])
 def create_user():
+    code = 200
     form = CreateForm()
     if form.validate_on_submit():
         try:
             user = core.create_user(form.username.data, form.password.data)
         except CtfException as exc:
             flash(exc.message, 'danger')
+            code = 409
         else:
             key = core.create_session_key(user)
             session['key'] = key
             return redirect_next(fallback=url_for('.home_page'), code=303)
-    return render_template('register.html', form=form)
+    return render_template('register.html', form=form), code
 
 
 @bp.route('/login/', methods=['GET', 'POST'])

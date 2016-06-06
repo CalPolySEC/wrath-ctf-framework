@@ -43,6 +43,12 @@ def auth(client):
     assert client.post('/login/', data=data).status_code == 303
 
 
+def test_leaderboard(client):
+    rv = client.get('/')
+    assert rv.status_code == 200
+    assert b'No teams yet :(' in rv.data
+
+
 def test_is_safe_url(app):
     with app.test_request_context('/url'):
         assert is_safe_url('')

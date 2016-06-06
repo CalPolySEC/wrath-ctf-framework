@@ -6,33 +6,6 @@ function setCookie(key, val) {
 };
 
 $(function() {
-  var togglePasword = function() {
-    var shown = true;
-    return function() {
-      $('.password').each(function() {
-        var password = $(this).data('password');
-        if (shown) {
-          $(this).html('*'.repeat(password.length));
-        } else {
-          $(this).text(password);
-        }
-      });
-      shown = !shown;
-    };
-  }();
-  togglePasword();
-
-  $('#show-password').click(function() {
-    if ($(this).text() == 'Show password') {
-      $(this).text('Hide password');
-    } else {
-      $(this).text('Show password');
-    }
-    togglePasword();
-  });
-
-  $('.level').tooltip();
-
   /* Auto-update */
   (function() {
     var timer = null;

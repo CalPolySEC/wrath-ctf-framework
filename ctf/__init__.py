@@ -1,13 +1,17 @@
-from flask import Flask, render_template
+import json
+import os
+import flask
+import redis
 from werkzeug import exceptions
 from . import api, frontend, ext
 from .models import db
-import os
-import redis
 
 
 def create_app():
-    app = Flask(__name__)
+    app = flask.Flask(__name__)
+
+    if 'CTF_CONFIG' in os.environ:
+        app.config['CTF'] = json.load(open(os.environ['CTF_CONFIG']))
 
     app.config['END_TIME_UTC'] = os.environ.get('END_TIME_UTC')
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'not secure brah')
@@ -25,10 +29,19 @@ def create_app():
     def create_db():
         db.create_all()
 
+    @app.context_processor
+    def inject_authed():
+        """This should NOT be used to secure access control.
+
+        The aim of the 'authed' global is simply better link rendering in
+        templates.
+        """
+        return {'authed': 'key' in flask.session}
+
     def handle_error(exc):
         if not isinstance(exc, exceptions.HTTPException):
             exc = exceptions.InternalServerError()
-        return render_template('error.html', error=exc), exc.code
+        return flask.render_template('error.html', code=exc.code), exc.code
 
     for code in exceptions.default_exceptions.keys():
         app.register_error_handler(code, handle_error)
