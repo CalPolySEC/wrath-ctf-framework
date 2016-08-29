@@ -30,7 +30,9 @@ It needs to contain
 Development Environment
 -----------------------
 
-Here's how to get a local copy up and running:
+First, you need to install Redis on your machine and start and instance running.
+
+Then set up a virtual enviornment and install the required sources:
 
 ```
 virtualenv venv
@@ -39,11 +41,11 @@ pip install -r requirements.txt
 python scripts/build_db.py
 ```
 
-And to run the app:
+To run the app:
 
-`python app.py`
+`python run.py`
 
 By default, this will be available at http://localhost:5000. To run on a
 different port, use:
 
-`PORT=8080 python app.py`
+`PORT=8080 python run.py`

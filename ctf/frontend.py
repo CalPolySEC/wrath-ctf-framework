@@ -1,3 +1,4 @@
+""" Native Front End """
 from functools import wraps
 from flask import Blueprint, request, session, abort, redirect, \
                   render_template, url_for, flash
@@ -5,7 +6,7 @@ from flask.ext.wtf.csrf import validate_csrf
 from . import core
 from ._compat import urlparse
 from .core import CtfException
-from .forms import CreateForm, LoginForm
+from .forms import CreateForm, LoginForm, TeamForm
 
 
 bp = Blueprint('frontend', __name__)
@@ -60,7 +61,8 @@ def team_page(id):
     team = core.get_team(id)
     if not team:
         abort(404)
-    categories = core.get_categories()
+    #categories = core.get_categories()
+    categories = [] 
     return render_template('team.html', team=team, categories=categories)
 
 
@@ -86,6 +88,23 @@ def create_user():
             session['key'] = key
             return redirect_next(fallback=url_for('.home_page'), code=303)
     return render_template('register.html', form=form), code
+
+@bp.route('/team/', methods=['GET', 'POST'])
+@ensure_user
+def manage_team(user):
+    code = 200
+    form = TeamForm()
+    if user.team != None:
+        return redirect(url_for('.team_page', id=core.team_for_user(user).id))
+    if form.validate_on_submit():
+        try:
+            team = core.create_team(user, form.name.data)
+        except CtfException as exc: 
+            flash(exc.message, 'danger')
+            code = 409
+        else:
+            return redirect(url_for('.home_page'), code=303)
+    return render_template('create_team.html', form=form), code
 
 
 @bp.route('/login/', methods=['GET', 'POST'])
