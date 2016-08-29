@@ -35,3 +35,10 @@ class Fleg(db.Model):
     team = db.relationship('Team', backref='flegs')
     points = db.Column(db.Integer)
     earned_on = db.Column(db.DateTime, server_default=db.func.now())
+
+class Challenge(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(128), unique=True)
+    description = db.Column(db.Text)
+    fleg = db.relationship('Fleg')
+

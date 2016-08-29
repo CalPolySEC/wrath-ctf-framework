@@ -12,3 +12,4 @@ passwords/*.txt
 test.db
 config.json
 *.rdb
+*.swp
