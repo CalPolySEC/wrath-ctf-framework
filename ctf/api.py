@@ -229,7 +229,7 @@ def invite_user(username):
 def submit_fleg(flag):
     team = ensure_team()
     try:
-        db_fleg = core.add_fleg(fleg, team)
+        db_fleg = core.add_fleg(flag, team)
     except CtfException as exc:
         abort(400, exc.message)
     return jsonify({'points_earned': db_fleg.level.points}), 201
