@@ -13,7 +13,7 @@ class LoginForm(Form):
     password = PasswordField('Password', validators=[validators.Required()])
     submit = SubmitField('Login')
 
+
 class TeamForm(Form):
     name = StringField('Name', validators=[validators.Required()])
     submit = SubmitField('Create Team')
-

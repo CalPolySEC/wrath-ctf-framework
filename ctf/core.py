@@ -20,8 +20,10 @@ class CtfException(Exception):
 def ensure_active():
     fmt = '%Y-%m-%dT%H:%M:%S.%fZ'
     now = datetime.utcnow()
-    start = datetime.strptime(app.config['CTF_SETTINGS']['start_time'], fmt)
-    end = datetime.strptime(app.config['CTF_SETTINGS']['end_time'], fmt)
+    start = datetime.strptime(current_app.config['CTF_SETTINGS']['start_time'],
+                              fmt)
+    end = datetime.strptime(current_app.config['CTF_SETTINGS']['end_time'],
+                            fmt)
     if now < start:
         raise CtfException('The competition has not started yet. Calm down.')
     elif now > end:
@@ -34,7 +36,6 @@ def get_teams():
 
 
 def get_team(id):
-    # TODO: why does this exist?
     return Team.query.get(id)
 
 
@@ -49,11 +50,6 @@ def user_for_token(token):
     if not user_id:
         return None
     return User.query.filter_by(id=int(user_id)).first()
-
-
-def team_for_user(user):
-    # TODO: why does this exist?
-    return user.team
 
 
 def create_user(username, password):

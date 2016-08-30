@@ -35,8 +35,7 @@ def ensure_team(fn):
     @ensure_user
     @wraps(fn)
     def inner(user, *args, **kwargs):
-        team = core.team_for_user(user)
-        if team is None:
+        if user.team is None:
             flash('You must be part of a team.', 'danger')
             return redirect(url_for('.home_page'), code=303)
         return fn(user.team, *args, **kwargs)
@@ -61,8 +60,7 @@ def team_page(id):
     team = core.get_team(id)
     if not team:
         abort(404)
-    #categories = core.get_categories()
-    categories = [] 
+    categories = []
     return render_template('team.html', team=team, categories=categories)
 
 
@@ -89,17 +87,18 @@ def create_user():
             return redirect_next(fallback=url_for('.home_page'), code=303)
     return render_template('register.html', form=form), code
 
+
 @bp.route('/team/', methods=['GET', 'POST'])
 @ensure_user
 def manage_team(user):
     code = 200
     form = TeamForm()
-    if user.team != None:
-        return redirect(url_for('.team_page', id=core.team_for_user(user).id))
+    if user.team is not None:
+        return redirect(url_for('.team_page', id=user.team.id))
     if form.validate_on_submit():
         try:
-            team = core.create_team(user, form.name.data)
-        except CtfException as exc: 
+            core.create_team(user, form.name.data)
+        except CtfException as exc:
             flash(exc.message, 'danger')
             code = 409
         else:
