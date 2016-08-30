@@ -6,7 +6,7 @@ from flask_wtf.csrf import validate_csrf
 from . import core
 from ._compat import urlparse
 from .core import CtfException
-from .forms import CreateForm, LoginForm, TeamForm
+from .forms import CreateForm, LoginForm, TeamForm, SubmitForm
 
 
 bp = Blueprint('frontend', __name__)
@@ -47,13 +47,6 @@ def home_page():
     name = core.get_name()
     teams = core.get_teams()
     return render_template('home.html', name=name, teams=teams)
-
-
-@bp.route('/submit/')
-@ensure_team
-def fleg_page(team):
-    name = core.get_name()
-    return render_template('submit.html', name=name)
 
 
 @bp.route('/teams/<int:id>/')
@@ -168,20 +161,24 @@ def snoopin():
     return redirect('https://www.youtube.com/watch?v=dQw4w9WgXcQ', code=303)
 
 
-@bp.route('/flags', methods=['POST'])
+@bp.route('/submit/', methods=['GET', 'POST'])
 @ensure_team
 def submit_fleg(team):
     """Attempt to submit a fleg, and redirect to the fleg page."""
-    fleg = request.form.get('flag', '')
-    # Deliver swift justice
-    if fleg == 'V375BrzPaT':
-        return snoopin()
+    form = SubmitForm()
+    if form.validate_on_submit():
+        # Deliver swift justice
+        if form.fleg.data == 'V375BrzPaT':
+            return snoopin()
+        try:
+            solved = core.add_fleg(form.fleg.data, team)
+        except CtfException as exc:
+            flash(exc.message, 'danger')
+            code = 400
+        else:
+            flash('Correct! You have earned {0:d} points for your team.'
+                  .format(solved.points), 'success')
 
-    db_fleg, err_msg = core.add_fleg(fleg, session['team'])
-    if db_fleg is None:
-        flash(err_msg, 'danger')
-    else:
-        flash('Correct! You have earned {0:d} points for your team.'
-              .format(db_fleg.level.points), 'success')
-
-    return redirect(url_for('.fleg_page'), code=303)
+        return redirect(url_for('.submit_fleg'), code=303)
+    name = core.get_name()
+    return render_template('submit.html', name=name, form=form)

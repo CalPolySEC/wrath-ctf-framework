@@ -6,7 +6,7 @@ from flask import current_app
 from werkzeug.security import safe_str_cmp
 from ._compat import want_bytes
 from .ext import db
-from .models import Team, User, CleverName 
+from .models import Team, User, Challenge
 import hashlib
 import os
 
@@ -39,6 +39,11 @@ def get_team(id):
 
 def get_name():
     return current_app.config['CTF']['name']
+
+
+def hash_fleg(fleg):
+    return fleg
+#    return hashlib.sha256(want_bytes(fleg)).hexdigest()
 
 
 def create_session_key(user):
@@ -133,18 +138,18 @@ def leave_team(user):
 def add_fleg(fleg, team):
     ensure_active()
 
-    fleg_hash = hashlib.sha256(want_bytes(fleg)).hexdigest()
-    db_fleg = CleverName.query.filter_by(hash=fleg_hash).first()
+    fleg_hash = hash_fleg(fleg)
+    solved = Challenge.query.filter_by(fleg_hash=fleg_hash).first()
 
-    if db_fleg is None:
+    if solved is None:
         raise CtfException('Nope.')  # fleg incorrect
-    elif db_fleg.level in team.levels:
+    elif solved in team.challenges:
         raise CtfException('You\'ve already entered that flag.')
 
-    team.levels.append(db_fleg.level)
-    team.points += db_fleg.level.points
+    team.challenges.append(solved)
+    team.points += solved.points
     team.last_fleg = db.func.now()
     db.session.add(team)
     db.session.commit()
 
-    return db_fleg
+    return solved
