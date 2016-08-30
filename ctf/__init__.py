@@ -9,12 +9,18 @@ from .models import db
 
 def create_app():
     app = flask.Flask(__name__)
+    config_file = "./ctf.json"
 
     if 'CTF_CONFIG' in os.environ:
-        app.config['CTF'] = json.load(open(os.environ['CTF_CONFIG']))
+        config_file = os.enviorn['CTF_CONFIG']
+    
+    with open(config_file, 'r') as config:
+        app.config['CTF'] = json.load(config)
 
-    app.config['END_TIME_UTC'] = os.environ.get('END_TIME_UTC')
-    app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'not secure brah')
+    if "secret_key" not in app.config['CTF']:
+        app.config['CTF']['secret_key'] = "not secure brah"
+
+
     app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL',
                                                            'sqlite:///test.db')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
