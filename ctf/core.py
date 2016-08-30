@@ -6,7 +6,7 @@ from flask import current_app
 from werkzeug.security import safe_str_cmp
 from ._compat import want_bytes
 from .ext import db
-from .models import Team, User, Fleg
+from .models import Team, User, CleverName 
 import hashlib
 import os
 
@@ -20,10 +20,8 @@ class CtfException(Exception):
 def ensure_active():
     fmt = '%Y-%m-%dT%H:%M:%S.%fZ'
     now = datetime.utcnow()
-    start = datetime.strptime(current_app.config['CTF_SETTINGS']['start_time'],
-                              fmt)
-    end = datetime.strptime(current_app.config['CTF_SETTINGS']['end_time'],
-                            fmt)
+    start = datetime.strptime(current_app.config['CTF']['start_time'], fmt)
+    end = datetime.strptime(current_app.config['CTF']['end_time'], fmt)
     if now < start:
         raise CtfException('The competition has not started yet. Calm down.')
     elif now > end:
@@ -37,6 +35,10 @@ def get_teams():
 
 def get_team(id):
     return Team.query.get(id)
+
+
+def get_name():
+    return current_app.config['CTF']['name']
 
 
 def create_session_key(user):
@@ -132,7 +134,7 @@ def add_fleg(fleg, team):
     ensure_active()
 
     fleg_hash = hashlib.sha256(want_bytes(fleg)).hexdigest()
-    db_fleg = Fleg.query.filter_by(hash=fleg_hash).first()
+    db_fleg = CleverName.query.filter_by(hash=fleg_hash).first()
 
     if db_fleg is None:
         raise CtfException('Nope.')  # fleg incorrect
