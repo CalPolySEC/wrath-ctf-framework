@@ -44,24 +44,28 @@ def ensure_team(fn):
 
 @bp.route('/')
 def home_page():
+    name = core.get_name()
     teams = core.get_teams()
-    return render_template('home.html', teams=teams)
+    return render_template('home.html', name=name, teams=teams)
 
 
 @bp.route('/submit/')
 @ensure_team
 def fleg_page(team):
-    return render_template('submit.html')
+    name = core.get_name()
+    return render_template('submit.html', name=name)
 
 
 @bp.route('/teams/<int:id>/')
 def team_page(id):
     """Get the page for a specific team."""
+    name = core.get_name()
     team = core.get_team(id)
     if not team:
         abort(404)
     categories = []
-    return render_template('team.html', team=team, categories=categories)
+    return render_template('team.html', name=name, team=team,
+                           categories=categories)
 
 
 def redirect_next(fallback, **kwargs):
@@ -81,6 +85,7 @@ def flash_wtf_errors(form):
 @bp.route('/register/', methods=['GET', 'POST'])
 def create_user():
     code = 200
+    name = core.get_name()
     form = CreateForm()
 
     if form.validate_on_submit():
@@ -98,13 +103,14 @@ def create_user():
         code = 400
 
     flash_wtf_errors(form)
-    return render_template('register.html', form=form), code
+    return render_template('register.html', name=name, form=form), code
 
 
 @bp.route('/team/', methods=['GET', 'POST'])
 @ensure_user
 def manage_team(user):
     code = 200
+    name = core.get_name()
     form = TeamForm()
     if user.team is not None:
         return redirect(url_for('.team_page', id=user.team.id), code=303)
@@ -122,13 +128,14 @@ def manage_team(user):
         code = 400
 
     flash_wtf_errors(form)
-    return render_template('create_team.html', form=form), code
+    return render_template('create_team.html', name=name, form=form), code
 
 
 @bp.route('/login/', methods=['GET', 'POST'])
 def login():
     """Log into a team with its password."""
     code = 200
+    name = core.get_name()
     form = LoginForm()
     if form.validate_on_submit():
         try:
@@ -141,7 +148,7 @@ def login():
             session['key'] = key
             return redirect_next(fallback=url_for('.home_page'), code=303)
     flash_wtf_errors(form)
-    return render_template('login.html', form=form), code
+    return render_template('login.html', name=name, form=form), code
 
 
 @bp.route('/logout/')

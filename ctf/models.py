@@ -27,11 +27,18 @@ class Team(db.Model):
     invited = db.relationship('User', secondary=invite_table)
 
 
-class Fleg(db.Model):
+class CleverName(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     user = db.relationship('User', backref='flegs')
     team_id = db.Column(db.Integer, db.ForeignKey('team.id'))
     team = db.relationship('Team', backref='flegs')
-    points = db.Column(db.Integer)
     earned_on = db.Column(db.DateTime, server_default=db.func.now())
+
+class Challenge(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(128), unique=True)
+    description = db.Column(db.Text)
+    clever_name_id = db.Column(db.Integer, db.ForeignKey('clever_name.id')) 
+    clever_name = db.relationship('CleverName')
+    points = db.Column(db.Integer)
