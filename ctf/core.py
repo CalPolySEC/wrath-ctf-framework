@@ -29,11 +29,13 @@ def ensure_active():
 
 
 def get_teams():
+    # TODO: Team.points ought to be a SQL sum instead of denormalized
     return Team.query.order_by(Team.points.desc(), Team.last_fleg).all()
 
 
 def get_team(id):
-    return Team.query.filter_by(id=id).first()
+    # TODO: why does this exist?
+    return Team.query.get(id)
 
 
 def create_session_key(user):
@@ -50,6 +52,7 @@ def user_for_token(token):
 
 
 def team_for_user(user):
+    # TODO: why does this exist?
     return user.team
 
 
@@ -114,7 +117,7 @@ def create_invite(team, username):
 
 
 def join_team(team_id, user):
-    team = Team.query.filter_by(id=team_id).first()
+    team = Team.query.get(team_id)
     if not team or team not in user.invites:
         raise CtfException('You have not been invited to this team.')
     user.team = team
