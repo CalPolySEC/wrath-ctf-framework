@@ -20,8 +20,10 @@ class CtfException(Exception):
 def ensure_active():
     fmt = '%Y-%m-%dT%H:%M:%S.%fZ'
     now = datetime.utcnow()
-    start = datetime.strptime(app.config['CTF_SETTINGS']['start_time'], fmt)
-    end = datetime.strptime(app.config['CTF_SETTINGS']['end_time'], fmt)
+    start = datetime.strptime(current_app.config['CTF_SETTINGS']['start_time'],
+                              fmt)
+    end = datetime.strptime(current_app.config['CTF_SETTINGS']['end_time'],
+                            fmt)
     if now < start:
         raise CtfException('The competition has not started yet. Calm down.')
     elif now > end:
