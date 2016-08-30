@@ -33,7 +33,7 @@
         </ul>
         <ul class="nav navbar-nav navbar-right">
           {% if authed -%}
-          <li><a href="{{ url_for('frontend.fleg_page') }}">Submit a Flag</a></li>
+          <li><a href="{{ url_for('frontend.submit_fleg') }}">Submit a Flag</a></li>
           <li><a href="{{ url_for('frontend.manage_team') }}">Team</a></li>
           <li><a rel="nofollow" href="{{ url_for('frontend.logout', token=csrf_token()) }}">Logout</a></li>
           {% else -%}
