@@ -2,6 +2,7 @@
 from flask import Blueprint, request, current_app, abort, Response, jsonify
 from itsdangerous import Signer, BadSignature, want_bytes
 from werkzeug import exceptions
+from functools import wraps
 from . import core, ext
 from ._compat import text_type
 from .core import CtfException
@@ -20,19 +21,30 @@ for code in exceptions.default_exceptions.keys():
         bp.errorhandler(code)(handle_error)
 
 
-def json_value(key, desired_type=None):
-    data = request.get_json()
-    try:
-        value = data[key]
-    except (KeyError, TypeError):
-        abort(400, 'Missing JSON value \'{0}\'.'.format(key))
-    if desired_type and not isinstance(value, desired_type):
-        if desired_type == text_type:
-            type_name = 'string'
-        else:
-            type_name = desired_type.__name__
-        abort(400, 'Expected \'{0}\' to be type {1}.'.format(key, type_name))
-    return value
+def param(key, desired_type=None):
+    """Return a decorator to parse a JSON request value."""
+    def decorator(view_func):
+        """The actual decorator"""
+        @wraps(view_func)
+        def inner(*args, **kwargs):
+            data = request.get_json()  # May raise a 400
+            try:
+                value = data[key]
+            except (KeyError, TypeError):
+                abort(400, "Missing JSON value '{0}'.".format(key))
+            if desired_type and not isinstance(value, desired_type):
+                # For the error message
+                if desired_type == text_type:
+                    type_name = 'string'
+                else:
+                    type_name = desired_type.__name__
+                abort(400, ("Expected '{0}' to be type {1}."
+                            .format(key, type_name)))
+            # Success, pass through to view function
+            kwargs[key] = value
+            return view_func(*args, **kwargs)
+        return inner
+    return decorator
 
 
 def get_signer():
@@ -77,9 +89,9 @@ def create_signed_key(user):
 
 
 @bp.route('/users/', methods=['POST'])
-def create_user():
-    username = json_value('username', text_type)
-    password = json_value('password', text_type)
+@param('username', text_type)
+@param('password', text_type)
+def create_user(username, password):
     if not username or not password:
         abort(400, 'You must supply a username and password.')
     try:
@@ -91,9 +103,9 @@ def create_user():
 
 
 @bp.route('/sessions/', methods=['POST'])
-def login():
-    username = json_value('username', text_type)
-    password = json_value('password', text_type)
+@param('username', text_type)
+@param('password', text_type)
+def login(username, password):
     try:
         user = core.login(username, password)
     except CtfException as exc:
@@ -118,9 +130,9 @@ def me():
 
 
 @bp.route('/teams/', methods=['POST'])
-def create_team():
+@param('name', text_type)
+def create_team(name):
     user = ensure_user()
-    name = json_value('name', text_type)
     try:
         team = core.create_team(user, name)
     except CtfException as exc:
@@ -144,11 +156,11 @@ def invited_teams():
 
 
 @bp.route('/user', methods=['PATCH'])
-def join_team():
+@param('team', int)
+def join_team(team):
     user = ensure_user()
-    team_id = json_value('team', int)
     try:
-        core.join_team(team_id, user)
+        core.join_team(team, user)
     except CtfException as exc:
         abort(400, exc.message)
     return Response(status=204)
@@ -191,9 +203,9 @@ def my_team():
 
 
 @bp.route('/team', methods=['PATCH'])
-def rename_team():
+@param('name', text_type)
+def rename_team(name):
     team = ensure_team()
-    name = json_value('name', text_type)
     try:
         team = core.rename_team(team, name)
     except CtfException as exc:
@@ -202,20 +214,20 @@ def rename_team():
 
 
 @bp.route('/team/members', methods=['POST'])
-def invite_user():
+@param('username', text_type)
+def invite_user(username):
     team = ensure_team()
-    user = json_value('username', text_type)
     try:
-        core.create_invite(team, user)
+        core.create_invite(team, username)
     except CtfException as exc:
         abort(400, exc.message)
     return Response(status=204)
 
 
 @bp.route('/flags/', methods=['POST'])
-def submit_fleg():
+@param('flag', text_type)
+def submit_fleg(flag):
     team = ensure_team()
-    fleg = json_value('flag', text_type)
     try:
         db_fleg = core.add_fleg(fleg, team)
     except CtfException as exc:
