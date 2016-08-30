@@ -35,8 +35,7 @@ def ensure_team(fn):
     @ensure_user
     @wraps(fn)
     def inner(user, *args, **kwargs):
-        team = user.team
-        if team is None:
+        if user.team is None:
             flash('You must be part of a team.', 'danger')
             return redirect(url_for('.home_page'), code=303)
         return fn(user.team, *args, **kwargs)
