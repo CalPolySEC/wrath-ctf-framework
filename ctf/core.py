@@ -6,7 +6,7 @@ from flask import current_app
 from werkzeug.security import safe_str_cmp
 from ._compat import want_bytes
 from .ext import db
-from .models import Team, User, Fleg
+from .models import Team, User, CleverName 
 import hashlib
 import os
 
@@ -134,7 +134,7 @@ def add_fleg(fleg, team):
     ensure_active()
 
     fleg_hash = hashlib.sha256(want_bytes(fleg)).hexdigest()
-    db_fleg = Fleg.query.filter_by(hash=fleg_hash).first()
+    db_fleg = CleverName.query.filter_by(hash=fleg_hash).first()
 
     if db_fleg is None:
         raise CtfException('Nope.')  # fleg incorrect
