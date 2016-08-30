@@ -37,6 +37,10 @@ def get_team(id):
     return Team.query.get(id)
 
 
+def get_name():
+    return current_app.config['CTF']['name']
+
+
 def create_session_key(user):
     token = urlsafe_b64encode(os.urandom(24)).decode('ascii')
     current_app.redis.set(u'api-token.%s' % token, user.id)
