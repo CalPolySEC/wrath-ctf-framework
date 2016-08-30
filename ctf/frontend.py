@@ -2,7 +2,7 @@
 from functools import wraps
 from flask import Blueprint, request, session, abort, redirect, \
                   render_template, url_for, flash
-from flask.ext.wtf.csrf import validate_csrf
+from flask_wtf.csrf import validate_csrf
 from . import core
 from ._compat import urlparse
 from .core import CtfException
@@ -25,7 +25,7 @@ def ensure_user(fn):
         if 'key' in session:
             user = core.user_for_token(session['key'])
         if user is None:
-            flash('You must be logged in to a team to do that.', 'danger')
+            flash('You must be logged in to do that.', 'danger')
             return redirect(url_for('.login', next=request.path), code=303)
         return fn(user, *args, **kwargs)
     return inner
@@ -71,10 +71,18 @@ def redirect_next(fallback, **kwargs):
     return redirect(url, **kwargs)
 
 
+def flash_wtf_errors(form):
+    for field, errors in form.errors.items():
+        for error in errors:
+            flash("%s: %s" % (getattr(form, field).label.text, error),
+                  'danger')
+
+
 @bp.route('/register/', methods=['GET', 'POST'])
 def create_user():
     code = 200
     form = CreateForm()
+
     if form.validate_on_submit():
         try:
             user = core.create_user(form.username.data, form.password.data)
@@ -85,6 +93,11 @@ def create_user():
             key = core.create_session_key(user)
             session['key'] = key
             return redirect_next(fallback=url_for('.home_page'), code=303)
+    elif request.method == 'POST':
+        # Attempted submit, but form validation failed
+        code = 400
+
+    flash_wtf_errors(form)
     return render_template('register.html', form=form), code
 
 
@@ -94,7 +107,8 @@ def manage_team(user):
     code = 200
     form = TeamForm()
     if user.team is not None:
-        return redirect(url_for('.team_page', id=user.team.id))
+        return redirect(url_for('.team_page', id=user.team.id), code=303)
+
     if form.validate_on_submit():
         try:
             core.create_team(user, form.name.data)
@@ -103,6 +117,11 @@ def manage_team(user):
             code = 409
         else:
             return redirect(url_for('.home_page'), code=303)
+    elif request.method == 'POST':
+        # Attempted submit, but form validation failed
+        code = 400
+
+    flash_wtf_errors(form)
     return render_template('create_team.html', form=form), code
 
 
@@ -121,6 +140,7 @@ def login():
             key = core.create_session_key(user)
             session['key'] = key
             return redirect_next(fallback=url_for('.home_page'), code=303)
+    flash_wtf_errors(form)
     return render_template('login.html', form=form), code
 
 
