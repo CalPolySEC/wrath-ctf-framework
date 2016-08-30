@@ -40,5 +40,5 @@ class Challenge(db.Model):
     name = db.Column(db.String(128), unique=True)
     description = db.Column(db.Text)
     clever_name_id = db.Column(db.Integer, db.ForeignKey('clever_name.id')) 
-    clever_name = db.relationship('CleverName')
+    clever_name = db.relationship('CleverName', back_populate='challenge')
     points = db.Column(db.Integer)
