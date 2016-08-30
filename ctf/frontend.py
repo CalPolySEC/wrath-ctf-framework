@@ -35,7 +35,7 @@ def ensure_team(fn):
     @ensure_user
     @wraps(fn)
     def inner(user, *args, **kwargs):
-        team = core.team_for_user(user)
+        team = user.team
         if team is None:
             flash('You must be part of a team.', 'danger')
             return redirect(url_for('.home_page'), code=303)
@@ -94,8 +94,8 @@ def create_user():
 def manage_team(user):
     code = 200
     form = TeamForm()
-    if user.team != None:
-        return redirect(url_for('.team_page', id=core.team_for_user(user).id))
+    if user.team is not None:
+        return redirect(url_for('.team_page', id=user.team.id))
     if form.validate_on_submit():
         try:
             core.create_team(user, form.name.data)

@@ -36,7 +36,6 @@ def get_teams():
 
 
 def get_team(id):
-    # TODO: why does this exist?
     return Team.query.get(id)
 
 
@@ -51,11 +50,6 @@ def user_for_token(token):
     if not user_id:
         return None
     return User.query.filter_by(id=int(user_id)).first()
-
-
-def team_for_user(user):
-    # TODO: why does this exist?
-    return user.team
 
 
 def create_user(username, password):

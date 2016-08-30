@@ -75,8 +75,7 @@ def ensure_team(user=None):
     """
     if user is None:
         user = ensure_user()
-    team = core.team_for_user(user)
-    if team is None:
+    if user.team is None:
         abort(403, 'You must be part of a team.')
     return user.team
 
