@@ -15,15 +15,7 @@ def create_app():
         config_file = os.enviorn['CTF_CONFIG']
     
     with open(config_file, 'r') as config:
-        app.config['CTF'] = json.load(config)
-
-    if "secret_key" not in app.config['CTF']:
-        app.config['CTF']['secret_key'] = "not secure brah"
-
-
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL',
-                                                           'sqlite:///test.db')
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+        app.config.update(json.load(config))
 
     app.redis = redis.StrictRedis()
 
