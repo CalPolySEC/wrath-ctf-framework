@@ -18,6 +18,7 @@ class TeamForm(Form):
     name = StringField('Name', validators=[validators.Required()])
     submit = SubmitField('Create Team')
 
+
 class SubmitForm(Form):
     fleg = StringField('Flag', validators=[validators.Required()])
     submit = SubmitField('Go!')

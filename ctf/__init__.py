@@ -2,20 +2,25 @@ import json
 import os
 import flask
 import redis
+import tempfile
 from werkzeug import exceptions
 from . import api, frontend, ext
 from .models import db
 
 
-def create_app():
+def create_app(test=False):
     app = flask.Flask(__name__)
     config_file = "./ctf.json"
 
     if 'CTF_CONFIG' in os.environ:
         config_file = os.enviorn['CTF_CONFIG']
-    
+
     with open(config_file, 'r') as config:
         app.config.update(json.load(config))
+
+    if test:
+        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///%s' % \
+         tempfile.mktemp()
 
     app.redis = redis.StrictRedis()
 

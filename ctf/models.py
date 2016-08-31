@@ -12,7 +12,7 @@ CleverName = \
     db.Table('clever_name', db.Model.metadata,
              db.Column('team_id', db.Integer, db.ForeignKey('team.id')),
              db.Column('challenge_id', db.Integer,
-                        db.ForeignKey('challenge.id')),
+                       db.ForeignKey('challenge.id')),
              db.Column('earned_on', db.DateTime, server_default=db.func.now())
              )
 
@@ -34,7 +34,7 @@ class Team(db.Model):
     points = db.Column(db.Integer, default=0)
     last_fleg = db.Column(db.DateTime, server_default=db.func.now())
     invited = db.relationship('User', secondary=invite_table)
-    challenges = db.relationship('Challenge', secondary =CleverName,
+    challenges = db.relationship('Challenge', secondary=CleverName,
                                  backref='team')
 
 
