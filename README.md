@@ -1,8 +1,7 @@
 WRATH CTF Framework
 ===================
-
-[![Build Status](https://travis-ci.org/DeltaHeavy/wrath-ctf-framework.svg?branch=master)](https://travis-ci.org/DeltaHeavy/wrath-ctf-framework)
-[![Coverage Status](https://coveralls.io/repos/github/DeltaHeavy/wrath-ctf-framework/badge.svg?branch=master)](https://coveralls.io/github/DeltaHeavy/wrath-ctf-framework?branch=master)
+-[![Build Status](https://travis-ci.org/DeltaHeavy/wrath-ctf-framework.svg?branch=master)](https://travis-ci.org/DeltaHeavy/wrath-ctf-framework)        
+-[![Coverage Status](https://coveralls.io/repos/github/DeltaHeavy/wrath-ctf-framework/badge.svg?branch=master)](https://coveralls.io/github/DeltaHeavy/wrath-ctf-framework?branch=master)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/DeltaHeavy/wrath-ctf-framework/master/LICENSE)
 
 **What? Really? Another Tiny Homebrewed CTF Framework?**
@@ -30,7 +29,9 @@ It needs to contain
 Development Environment
 -----------------------
 
-Here's how to get a local copy up and running:
+First, you need to install Redis on your machine and start and instance running.
+
+Then set up a virtual enviornment and install the required sources:
 
 ```
 virtualenv venv
@@ -39,11 +40,11 @@ pip install -r requirements.txt
 python scripts/build_db.py
 ```
 
-And to run the app:
+To run the app:
 
-`python app.py`
+`python run.py`
 
 By default, this will be available at http://localhost:5000. To run on a
 different port, use:
 
-`PORT=8080 python app.py`
+`PORT=8080 python run.py`

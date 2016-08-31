@@ -1,15 +1,20 @@
 {% extends 'base.html' %}
 
+{% macro field(form_field) -%}
+      {{ form_field.label(class='sr-only') }}
+      {{ form_field(class='form-control', placeholder=form_field.label.text, required=True, **kwargs) }}
+{%- endmacro %}
+
 {% block body %}
     <div class="center">
       <p><b>Note:</b> The flag for a level is the password for that level (eg. <code>bandit0</code> or <code>leviathan0</code>)</p>
     </div>
-    <form class="flag-submission" method="POST" action="{{ url_for('.submit_fleg') }}">
-      <input type="hidden" name="token" value="{{ session['csrf_token'] }}">
+    <form method="POST">
+      {{ form.hidden_tag() }}
       <div class="input-group input-group-lg">
-        <input type="text" name="flag" class="form-control" placeholder="Flag" required autofocus>
+        {{ field(form.fleg, autofocus=True) }}
         <span class="input-group-btn">
-          <input type="submit" class="btn btn-primary" type="button" value="Go!">
+          {{ form.submit(class='btn btn-primary') }}
         </span>
       </div>
     </form>
