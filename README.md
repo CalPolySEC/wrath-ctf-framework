@@ -37,7 +37,6 @@ Then set up a virtual enviornment and install the required sources:
 virtualenv venv
 source venv/bin/activate # (. venv/bin/activate.fish on fish)
 pip install -r requirements.txt
-python scripts/build_db.py
 ```
 
 To run the app:
