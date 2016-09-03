@@ -42,8 +42,7 @@ def get_name():
 
 
 def hash_fleg(fleg):
-    return fleg
-#    return hashlib.sha256(want_bytes(fleg)).hexdigest()
+    return hashlib.sha256(want_bytes(fleg)).hexdigest()
 
 
 def create_session_key(user):

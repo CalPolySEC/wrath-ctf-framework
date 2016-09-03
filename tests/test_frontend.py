@@ -1,15 +1,12 @@
 # -*- coding: utf-8 -*-
 from ctf import create_app, ext, frontend
 import fakeredis
-import os
 import pytest
-import tempfile
 
 
 @pytest.fixture
 def app(monkeypatch):
-    os.environ['DATABASE_URL'] = 'sqlite:///%s' % tempfile.mktemp()
-    app = create_app()
+    app = create_app(test=True)
     app.redis = fakeredis.FakeRedis()
     app.secret_key = 'my secret key'
     app.debug = True

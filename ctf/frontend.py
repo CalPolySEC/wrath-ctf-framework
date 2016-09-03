@@ -174,7 +174,6 @@ def submit_fleg(team):
             solved = core.add_fleg(form.fleg.data, team)
         except CtfException as exc:
             flash(exc.message, 'danger')
-            code = 400
         else:
             flash('Correct! You have earned {0:d} points for your team.'
                   .format(solved.points), 'success')
