@@ -1,0 +1,10 @@
+{
+    "problems": [
+        {
+            "title":"Test Crypto",
+            "description": "This is a test of the crypto problems",
+            "points": 30,
+            "fleg": "test_fleg"
+        }
+    ]
+}
