@@ -2,11 +2,13 @@
 from ctf import create_app, ext, frontend
 import fakeredis
 import pytest
+import os
 
 
 @pytest.fixture
 def app(monkeypatch):
-    app = create_app(test=True)
+    os.environ["CTF_CONFIG"] = "tests/test_config.json"
+    app = create_app()
     app.redis = fakeredis.FakeRedis()
     app.secret_key = 'my secret key'
     app.debug = True
