@@ -241,3 +241,9 @@ def submit_fleg(team, flag):
     except CtfException as exc:
         abort(400, exc.message)
     return jsonify({'points_earned': db_fleg.level.points}), 201
+
+@bp.route('/challenges/')
+@ensure_user
+def view_challenges(user):
+    return core.get_challenges()
+    
