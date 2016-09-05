@@ -41,6 +41,14 @@ def get_name():
     return current_app.config['CTF']['name']
 
 
+def get_challenges():
+    return Challenge.query.all()
+
+
+def get_categories():
+    return list(set(map(lambda c:c.category, get_challenges())))
+
+
 def hash_fleg(fleg):
     return hashlib.sha256(want_bytes(fleg)).hexdigest()
 
