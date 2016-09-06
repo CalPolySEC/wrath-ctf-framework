@@ -23,5 +23,10 @@ def build_challenges():
                                       category=c,
                                       points=problem["points"],
                                       fleg_hash=hash_fleg(problem["fleg"]))
-                db.session.add(challenge)
-    db.session.commit()
+                try:
+                    db.session.add(challenge)
+                    db.session.commit()
+                except:
+                    print "Something went wrong with challenge %s, skipping" \
+                     % problem["title"]
+                    

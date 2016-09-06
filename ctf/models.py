@@ -48,3 +48,9 @@ class Challenge(db.Model):
     fleg_hash = db.Column(db.String(128))
     teams_solved = db.relationship('Team', secondary=CleverName,
                                    backref='challenge')
+
+    def chal_info(self):
+        return {"title": self.title,
+                "description": self.description,
+                "category": self.category,
+                "points": self.points}
