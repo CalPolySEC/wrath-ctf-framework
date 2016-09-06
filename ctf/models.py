@@ -45,7 +45,7 @@ class Challenge(db.Model):
     description = db.Column(db.Text)
     category = db.Column(db.String(123))
     points = db.Column(db.Integer)
-    fleg_hash = db.Column(db.String(128))
+    fleg_hash = db.Column(db.String(128), unique=True)
     teams_solved = db.relationship('Team', secondary=CleverName,
                                    backref='challenge')
 
