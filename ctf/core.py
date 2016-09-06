@@ -45,8 +45,8 @@ def get_challenges():
     return Challenge.query.all()
 
 
-def get_categories():
-    return list(set(map(lambda c:c.category, get_challenges())))
+def get_challenge(id):
+    return Challenge.query.get(id)
 
 
 def hash_fleg(fleg):

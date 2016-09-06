@@ -243,7 +243,7 @@ def submit_fleg(team, flag):
     return jsonify({'points_earned': db_fleg.level.points}), 201
 
 @bp.route('/challenges/')
-@ensure_user
-def view_challenges(user):
+@ensure_team
+def view_challenges(team):
     chal_dicts = map(lambda c:c.chal_info(), core.get_challenges())
     return jsonify({"challenges":chal_dicts})

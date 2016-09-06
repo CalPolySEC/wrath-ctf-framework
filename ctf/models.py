@@ -50,7 +50,8 @@ class Challenge(db.Model):
                                    backref='challenge')
 
     def chal_info(self):
-        return {"title": self.title,
+        return {"id": self.id,
+                "title": self.title,
                 "description": self.description,
                 "category": self.category,
                 "points": self.points}
