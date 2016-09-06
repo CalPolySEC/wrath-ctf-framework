@@ -5,6 +5,12 @@
             "description": "This is a test of the crypto problems",
             "points": 30,
             "fleg": "test_fleg"
+        },
+        {
+            "title":"Test Web",
+            "description": "This is a test of the web problems",
+            "points": 10,
+            "fleg": "test_fleg_returns"
         }
     ]
 }

@@ -42,7 +42,7 @@ def get_name():
 
 
 def get_challenges():
-    return Challenge.query.all()
+    return Challenge.query.order_by(Challenge.points).all()
 
 
 def get_challenge(id):
