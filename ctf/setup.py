@@ -29,4 +29,3 @@ def build_challenges():
                 except:
                     print "Something went wrong with challenge %s, skipping" \
                      % problem["title"]
-                    

@@ -237,13 +237,23 @@ def invite_user(team, username):
 @param('flag', text_type)
 def submit_fleg(team, flag):
     try:
-        db_fleg = core.add_fleg(flag, team)
+        solved = core.add_fleg(flag, team)
     except CtfException as exc:
         abort(400, exc.message)
-    return jsonify({'points_earned': db_fleg.level.points}), 201
+    return jsonify({'points_earned': solved.points}), 201
+
 
 @bp.route('/challenges/')
 @ensure_team
 def view_challenges(team):
-    chal_dicts = map(lambda c:c.chal_info(), core.get_challenges())
-    return jsonify({"challenges":chal_dicts})
+    chal_dicts = map(lambda c: c.chal_info(), core.get_challenges())
+    return jsonify({"challenges": chal_dicts})
+
+
+@bp.route('/challenges/<int:id>/')
+@ensure_team
+def challenge_info(team, id):
+    chal = core.get_challenge(id)
+    ret = chal.chal_info()
+    ret.update({"solved": core.has_solved(team, chal)})
+    return jsonify(ret)

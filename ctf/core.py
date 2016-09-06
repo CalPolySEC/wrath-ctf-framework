@@ -49,6 +49,10 @@ def get_challenge(id):
     return Challenge.query.get(id)
 
 
+def has_solved(team, challenge):
+    return challenge in set(team.challenges)
+
+
 def hash_fleg(fleg):
     return hashlib.sha256(want_bytes(fleg)).hexdigest()
 
