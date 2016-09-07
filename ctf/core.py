@@ -41,12 +41,14 @@ def get_name():
     return current_app.config['CTF']['name']
 
 
-def get_challenges():
-    return Challenge.query.order_by(Challenge.points).all()
+def get_challenges(team):
+    return Challenge.query.filter(Challenge.prereqs <= team.challenges)\
+           .order_by(Challenge.points).all()
 
 
-def get_challenge(id):
-    return Challenge.query.get(id)
+def get_challenge(team, id):
+    return Challenge.query.filter(Challenge.prereqs <= team.challenges)\
+           .order_by(Challenge.points).get(id)
 
 
 def has_solved(team, challenge):

@@ -18,11 +18,15 @@ def build_challenges():
             except ValueError:
                 raise ValueError("%s was malformed" % config_file)
             for problem in config["problems"]:
+                # We put this first to avoid circular dependancies
+                prereqs = Challenge.query.filter(
+                    Challenge.title in problem["prerequisites"]).all()
                 challenge = Challenge(title=problem["title"],
                                       description=problem["description"],
                                       category=c,
                                       points=problem["points"],
-                                      fleg_hash=hash_fleg(problem["fleg"]))
+                                      fleg_hash=hash_fleg(problem["fleg"]),
+                                      prerequisites=set(prereqs))
                 db.session.add(challenge)
                 try:
                     db.session.commit()

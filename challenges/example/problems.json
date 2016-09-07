@@ -4,13 +4,23 @@
             "title":"Test Crypto",
             "description": "This is a test of the crypto problems",
             "points": 30,
-            "fleg": "test_fleg"
+            "fleg": "test_fleg",
+            "prerequisites":[]
         },
         {
             "title":"Test Web",
             "description": "This is a test of the web problems",
             "points": 10,
-            "fleg": "test_fleg_returns"
+            "fleg": "test_fleg_returns",
+            "prerequisites":[]
+        },
+        {
+            "title":"Test Web Dep",
+            "description": "This is a test of the web problems",
+            "points": 20,
+            "fleg": "test_fleg_dep",
+            "prerequisites":["Test Web"]
         }
+        
     ]
 }

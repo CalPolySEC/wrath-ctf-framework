@@ -48,6 +48,8 @@ class Challenge(db.Model):
     fleg_hash = db.Column(db.String(128), unique=True)
     teams_solved = db.relationship('Team', secondary=CleverName,
                                    backref='challenge', collection_class=set)
+    prerequisite_id = db.Column(db.Integer, db.ForeignKey('challenge.id'))
+    prerequisites = db.relationship('Challenge', collection_class=set)
 
     def chal_info(self):
         return {"id": self.id,
