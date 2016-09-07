@@ -35,7 +35,7 @@ class Team(db.Model):
     last_fleg = db.Column(db.DateTime, server_default=db.func.now())
     invited = db.relationship('User', secondary=invite_table)
     challenges = db.relationship('Challenge', secondary=CleverName,
-                                 backref='team')
+                                 backref='team', collection_class=set)
 
 
 class Challenge(db.Model):
@@ -47,7 +47,7 @@ class Challenge(db.Model):
     points = db.Column(db.Integer)
     fleg_hash = db.Column(db.String(128), unique=True)
     teams_solved = db.relationship('Team', secondary=CleverName,
-                                   backref='challenge')
+                                   backref='challenge', collection_class=set)
 
     def chal_info(self):
         return {"id": self.id,

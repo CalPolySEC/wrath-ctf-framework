@@ -50,7 +50,7 @@ def get_challenge(id):
 
 
 def has_solved(team, challenge):
-    return challenge in set(team.challenges)
+    return challenge in team.challenges
 
 
 def hash_fleg(fleg):
@@ -157,7 +157,7 @@ def add_fleg(fleg, team):
     elif solved in team.challenges:
         raise CtfException('You\'ve already entered that flag.')
 
-    team.challenges.append(solved)
+    team.challenges.add(solved)
     team.points += solved.points
     team.last_fleg = db.func.now()
     db.session.add(team)
