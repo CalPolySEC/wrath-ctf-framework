@@ -41,14 +41,24 @@ def get_name():
     return current_app.config['CTF']['name']
 
 
+def check_prereqs(team, challenge):
+    if challenge.prerequisites is None:
+        return True
+    else:
+        return challenge.prerequisites <= team.challenges
+
+
 def get_challenges(team):
-    return Challenge.query.filter(Challenge.prereqs <= team.challenges)\
-           .order_by(Challenge.points).all()
+    all_challs = Challenge.query.order_by(Challenge.points).all()
+    return filter(lambda c: check_prereqs(team, c), all_challs)
 
 
 def get_challenge(team, id):
-    return Challenge.query.filter(Challenge.prereqs <= team.challenges)\
-           .order_by(Challenge.points).get(id)
+    chal = Challenge.query.get(id)
+    if None or not check_prereqs(team, chal):
+        return None
+    else:
+        return chal
 
 
 def has_solved(team, challenge):

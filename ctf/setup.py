@@ -19,8 +19,14 @@ def build_challenges():
                 raise ValueError("%s was malformed" % config_file)
             for problem in config["problems"]:
                 # We put this first to avoid circular dependancies
-                prereqs = Challenge.query.filter(
-                    Challenge.title in problem["prerequisites"]).all()
+                prereqs = set()
+                if len(problem["prerequisites"]) > 0:
+                    prereqs = Challenge.query.filter(
+                        Challenge.title.in_(problem["prerequisites"])).all()
+                    if len(prereqs) != len(problem["prerequisites"]):
+                        print "Prereq mismatch on %s, probably due to a typo\
+                               in prereq name or ordering" % problem["title"]
+                        continue
                 challenge = Challenge(title=problem["title"],
                                       description=problem["description"],
                                       category=c,
