@@ -255,5 +255,5 @@ def view_challenges(team):
 def challenge_info(team, id):
     chal = core.get_challenge(team, id)
     ret = chal.chal_info()
-    ret.update({"solved": core.has_solved(team, chal)})
+    ret.update({"solved": chal in team.challenges})
     return jsonify(ret)
