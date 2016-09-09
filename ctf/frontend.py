@@ -48,6 +48,7 @@ def home_page():
     teams = core.get_teams()
     return render_template('home.html', name=name, teams=teams)
 
+
 @bp.route('/challenges/')
 @ensure_team
 def challenge_page(team):
