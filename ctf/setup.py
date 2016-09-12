@@ -16,6 +16,7 @@ def build_challenges():
             try:
                 config = json.load(config_file)
             except ValueError:
+                print "here"
                 raise ValueError("%s was malformed" % config_file)
             for problem in config["problems"]:
                 # We put this first to avoid circular dependancies

@@ -2,10 +2,12 @@
 from ctf import create_app, ext, frontend
 import fakeredis
 import pytest
+import os
 
 
 @pytest.fixture
 def app(monkeypatch):
+    os.environ["CTF_CONFIG"] = "tests/configs/good.json"
     app = create_app(test=True)
     app.redis = fakeredis.FakeRedis()
     app.secret_key = 'my secret key'

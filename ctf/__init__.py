@@ -13,7 +13,7 @@ def create_app(test=False):
     config_file = "./ctf.json"
 
     if 'CTF_CONFIG' in os.environ:
-        config_file = os.enviorn['CTF_CONFIG']
+        config_file = os.environ['CTF_CONFIG']
 
     try:
         config = open(config_file, 'r')

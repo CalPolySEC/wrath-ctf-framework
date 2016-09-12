@@ -3,10 +3,12 @@ from ctf.ext import db
 from ctf.frontend import is_safe_url
 import fakeredis
 import pytest
+import os
 
 
 @pytest.fixture
 def app():
+    os.environ["CTF_CONFIG"] = "tests/configs/good.json"
     app = create_app(test=True)
     app.redis = fakeredis.FakeRedis()
     app.secret_key = 'my secret key'
