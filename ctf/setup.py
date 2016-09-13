@@ -16,7 +16,6 @@ def build_challenges():
             try:
                 config = json.load(config_file)
             except ValueError:
-                print "here"
                 raise ValueError("%s was malformed" % config_file)
             for problem in config["problems"]:
                 # We put this first to avoid circular dependancies
@@ -35,6 +34,10 @@ def build_challenges():
                                       fleg_hash=hash_fleg(problem["fleg"]),
                                       prerequisites=set(prereqs))
                 db.session.add(challenge)
+                for file in problem["resources"]:
+                    location = path.join(chal_path, c, file)
+                    resource = Resource(location=location, challenge=challenge)
+                    db.session.add(resource)
                 try:
                     db.session.commit()
                 except:

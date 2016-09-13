@@ -50,7 +50,7 @@ class Challenge(db.Model):
                                    backref='challenge', collection_class=set)
     prerequisite_id = db.Column(db.Integer, db.ForeignKey('challenge.id'))
     prerequisites = db.relationship('Challenge', collection_class=set)
-    resources = db.relationship('Resource')
+    resources = db.relationship('Resource', backref='challenge')
 
     def chal_info(self):
         return {"id": self.id,
