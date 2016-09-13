@@ -63,5 +63,5 @@ class Challenge(db.Model):
 class Resource(db.Model):
     __tablename__ = "resource"
     id = db.Column(db.Integer, primary_key=True)
-    path = db.Column(db.String(128))
+    location = db.Column(db.String(128))
     challenge_id = db.Column(db.Integer, db.ForeignKey('challenge.id'))

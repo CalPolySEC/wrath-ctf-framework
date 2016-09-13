@@ -1,7 +1,7 @@
 from flask import current_app as app
 from .ext import db
 from os import path
-from .models import Challenge
+from .models import Challenge, Resource
 from core import hash_fleg
 import json
 
