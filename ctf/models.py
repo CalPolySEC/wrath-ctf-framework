@@ -50,6 +50,7 @@ class Challenge(db.Model):
                                    backref='challenge', collection_class=set)
     prerequisite_id = db.Column(db.Integer, db.ForeignKey('challenge.id'))
     prerequisites = db.relationship('Challenge', collection_class=set)
+    resources = db.relationship('Resource')
 
     def chal_info(self):
         return {"id": self.id,
@@ -57,3 +58,10 @@ class Challenge(db.Model):
                 "description": self.description,
                 "category": self.category,
                 "points": self.points}
+
+
+class Resource(db.Model):
+    __tablename__ = "resource"
+    id = db.Column(db.Integer, primary_key=True)
+    path = db.Column(db.String(128))
+    challenge_id = db.Column(db.Integer, db.ForeignKey('challenge.id'))
