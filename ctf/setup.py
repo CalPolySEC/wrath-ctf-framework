@@ -35,8 +35,10 @@ def build_challenges():
                                       prerequisites=set(prereqs))
                 db.session.add(challenge)
                 for file in problem["resources"]:
-                    location = path.join(chal_path, c, file)
-                    resource = Resource(location=location, challenge=challenge)
+                    file_path = path.join(chal_path, c)
+                    resource = Resource(name=file,
+                                        path=file_path,
+                                        challenge=challenge)
                     db.session.add(resource)
                 try:
                     db.session.commit()

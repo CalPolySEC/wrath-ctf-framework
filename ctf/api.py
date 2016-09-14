@@ -1,5 +1,6 @@
 """JSON Bourne API"""
-from flask import Blueprint, request, current_app, abort, Response, jsonify
+from flask import Blueprint, request, current_app, abort, Response, jsonify, \
+    send_from_directory
 from itsdangerous import Signer, BadSignature, want_bytes
 from werkzeug import exceptions
 from functools import wraps
@@ -257,3 +258,13 @@ def challenge_info(team, id):
     ret = chal.chal_info()
     ret.update({"solved": chal in team.challenges})
     return jsonify(ret)
+
+
+@bp.route('/file/<category>/<name>/')
+@ensure_team
+def get_resource(team, category, name):
+    resource = core.get_resource(team, category, name)
+    if resource is None:
+        abort(400, "No resource could be found here")
+    else:
+        return send_from_directory(resource.path, resource.name)

@@ -6,7 +6,7 @@ from flask import current_app
 from werkzeug.security import safe_str_cmp
 from ._compat import want_bytes
 from .ext import db
-from .models import Team, User, Challenge
+from .models import Team, User, Challenge, Resource
 import hashlib
 import os
 
@@ -59,6 +59,16 @@ def get_challenge(team, id):
         return None
     else:
         return chal
+
+
+def get_resource(team, category, name):
+    resource = Resource.query.filter(Resource.name == name).\
+               join(Challenge).\
+               filter(Challenge.category == category).first()
+    if resource is None or not check_prereqs(team, resource.challenge):
+        return None
+    else:
+        return resource
 
 
 def hash_fleg(fleg):
