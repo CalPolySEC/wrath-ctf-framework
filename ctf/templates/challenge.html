@@ -19,6 +19,13 @@
                             <b>Points:</b> {{chal.points}}
                             <br>
                             {{chal.description}}
+                            <br>
+                            <br>
+                            {%- for resource in chal.resources %}
+                            <a href="{{resource_urls[resource.name]}}">
+                            {{resource.name}}</a>
+                            <br>
+                            {% endfor %}
                     </td></tr>
                 </table>
             </div>

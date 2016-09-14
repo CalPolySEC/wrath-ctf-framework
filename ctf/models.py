@@ -57,7 +57,8 @@ class Challenge(db.Model):
                 "title": self.title,
                 "description": self.description,
                 "category": self.category,
-                "points": self.points}
+                "points": self.points,
+                "resources": [r.name for r in self.resources]}
 
 
 class Resource(db.Model):
