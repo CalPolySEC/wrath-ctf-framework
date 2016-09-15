@@ -58,11 +58,10 @@ def challenge_page(team):
     for c in challenges:
         for r in c.resources:
             resource_urls[r.name] = url_for('.get_resource',
-                                             category = c.category,
-                                             name = r.name)
+                                            category=c.category, name=r.name)
     print resource_urls
     return render_template('challenge.html', name=name, challenges=challenges,
-                            resource_urls=resource_urls)
+                           resource_urls=resource_urls)
 
 
 @bp.route('/teams/<int:id>/')

@@ -260,11 +260,11 @@ def challenge_info(team, id):
     return jsonify(ret)
 
 
-@bp.route('/file/<category>/<name>/')
+@bp.route('/file/<category>/<name>')
 @ensure_team
 def get_resource(team, category, name):
     resource = core.get_resource(team, category, name)
     if resource is None:
-        abort(400, "No resource could be found here")
+        abort(404)
     else:
         return send_from_directory(resource.path, resource.name)

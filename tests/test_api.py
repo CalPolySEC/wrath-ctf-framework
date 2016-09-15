@@ -264,6 +264,7 @@ def test_challenges(app):
                     "description": "This is a test of the web problems",
                     "id": 2,
                     "points": 10,
+                    "resources": [],
                     "title": "Test Web"
                 },
                 {
@@ -271,6 +272,7 @@ def test_challenges(app):
                     "description": "This is a test of the crypto problems",
                     "id": 1,
                     "points": 30,
+                    "resources": ["crypto.rb"],
                     "title": "Test Crypto"
                 }
             ]
@@ -282,6 +284,7 @@ def test_challenges(app):
             "description": "This is a test of the web problems",
             "id": 2,
             "points": 10,
+            "resources": [],
             "solved": False,
             "title": "Test Web"
         }
@@ -300,6 +303,7 @@ def test_challenges(app):
             "description": "This is a test of the web problems",
             "id": 2,
             "points": 10,
+            "resources": [],
             "solved": True,
             "title": "Test Web"
         }
@@ -310,6 +314,32 @@ def test_challenges(app):
             "description": "This is a test of the web problems",
             "id": 3,
             "points": 20,
+            "resources": [],
             "solved": False,
             "title": "Test Web Dep"
         }
+
+
+def test_resources(app):
+    with app.test_client() as client:
+
+        # Create our test users
+        user = auth(client, 'user')
+        no_team_user = auth(client, 'no_team_user')
+
+        # Give one a team
+        post = {'name': 'PPP'}
+        api_req(client.post, '/api/teams/', user, post, 201)
+
+        # Try to get file (which we'll compare with the file)
+        test_file = open("tests/challenges/example/crypto.rb", 'r')
+        assert api_req(client.get, '/api/file/example/crypto.rb', user,
+                       None, 200) == test_file.read()
+        test_file.close()
+
+        # Fail due to lack of team
+        api_req(client.get, '/api/file/example/crypto.rb', no_team_user, None,
+                403, 'You must be part of a team.')
+
+        # Fail due to nx file
+        api_req(client.get, '/api/file/example/nx.rb', user, None, 404)
