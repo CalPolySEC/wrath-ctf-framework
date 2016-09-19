@@ -55,7 +55,7 @@ def get_challenges(team):
 
 def get_challenge(team, id):
     chal = Challenge.query.get(id)
-    if None or not check_prereqs(team, chal):
+    if chal is None or not check_prereqs(team, chal):
         return None
     else:
         return chal
