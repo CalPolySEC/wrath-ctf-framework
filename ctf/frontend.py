@@ -1,7 +1,7 @@
 """ Native Front End """
 from functools import wraps
 from flask import Blueprint, request, session, abort, redirect, \
-                  render_template, url_for, flash
+                  render_template, url_for, flash, send_from_directory
 from flask_wtf.csrf import validate_csrf
 from . import core
 from ._compat import urlparse
@@ -47,6 +47,21 @@ def home_page():
     name = core.get_name()
     teams = core.get_teams()
     return render_template('home.html', name=name, teams=teams)
+
+
+@bp.route('/challenges/')
+@ensure_team
+def challenge_page(team):
+    name = core.get_name()
+    challenges = core.get_challenges(team)
+    resource_urls = {}
+    for c in challenges:
+        for r in c.resources:
+            resource_urls[r.name] = url_for('.get_resource',
+                                            category=c.category, name=r.name)
+    print resource_urls
+    return render_template('challenge.html', name=name, challenges=challenges,
+                           resource_urls=resource_urls)
 
 
 @bp.route('/teams/<int:id>/')
@@ -181,3 +196,14 @@ def submit_fleg(team):
         return redirect(url_for('.submit_fleg'), code=303)
     name = core.get_name()
     return render_template('submit.html', name=name, form=form)
+
+
+@bp.route('/file/<category>/<name>/')
+@ensure_team
+def get_resource(team, category, name):
+    resource = core.get_resource(team, category, name)
+    if resource is None:
+        abort(404)
+    else:
+        return send_from_directory(resource.path, resource.name,
+                                   as_attachment=True)

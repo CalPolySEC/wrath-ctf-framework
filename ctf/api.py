@@ -1,5 +1,6 @@
 """JSON Bourne API"""
-from flask import Blueprint, request, current_app, abort, Response, jsonify
+from flask import Blueprint, request, current_app, abort, Response, jsonify, \
+    send_from_directory
 from itsdangerous import Signer, BadSignature, want_bytes
 from werkzeug import exceptions
 from functools import wraps
@@ -237,7 +238,33 @@ def invite_user(team, username):
 @param('flag', text_type)
 def submit_fleg(team, flag):
     try:
-        db_fleg = core.add_fleg(flag, team)
+        solved = core.add_fleg(flag, team)
     except CtfException as exc:
         abort(400, exc.message)
-    return jsonify({'points_earned': db_fleg.level.points}), 201
+    return jsonify({'points_earned': solved.points}), 201
+
+
+@bp.route('/challenges/')
+@ensure_team
+def view_challenges(team):
+    chal_dicts = map(lambda c: c.chal_info(), core.get_challenges(team))
+    return jsonify({"challenges": chal_dicts})
+
+
+@bp.route('/challenges/<int:id>/')
+@ensure_team
+def challenge_info(team, id):
+    chal = core.get_challenge(team, id)
+    ret = chal.chal_info()
+    ret.update({"solved": chal in team.challenges})
+    return jsonify(ret)
+
+
+@bp.route('/file/<category>/<name>')
+@ensure_team
+def get_resource(team, category, name):
+    resource = core.get_resource(team, category, name)
+    if resource is None:
+        abort(404)
+    else:
+        return send_from_directory(resource.path, resource.name)

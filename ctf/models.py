@@ -35,15 +35,35 @@ class Team(db.Model):
     last_fleg = db.Column(db.DateTime, server_default=db.func.now())
     invited = db.relationship('User', secondary=invite_table)
     challenges = db.relationship('Challenge', secondary=CleverName,
-                                 backref='team')
+                                 backref='team', collection_class=set)
 
 
 class Challenge(db.Model):
     __tablename__ = "challenge"
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(128), unique=True)
+    title = db.Column(db.String(128), unique=True)
     description = db.Column(db.Text)
+    category = db.Column(db.String(123))
     points = db.Column(db.Integer)
-    fleg_hash = db.Column(db.String(128))
+    fleg_hash = db.Column(db.String(128), unique=True)
     teams_solved = db.relationship('Team', secondary=CleverName,
-                                   backref='challenge')
+                                   backref='challenge', collection_class=set)
+    prerequisite_id = db.Column(db.Integer, db.ForeignKey('challenge.id'))
+    prerequisites = db.relationship('Challenge', collection_class=set)
+    resources = db.relationship('Resource', backref='challenge')
+
+    def chal_info(self):
+        return {"id": self.id,
+                "title": self.title,
+                "description": self.description,
+                "category": self.category,
+                "points": self.points,
+                "resources": [r.name for r in self.resources]}
+
+
+class Resource(db.Model):
+    __tablename__ = "resource"
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(128))
+    path = db.Column(db.String(128))
+    challenge_id = db.Column(db.Integer, db.ForeignKey('challenge.id'))

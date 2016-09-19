@@ -8,7 +8,7 @@ import os
 
 @pytest.fixture
 def app():
-    os.environ["CTF_CONFIG"] = "tests/test_config.json"
+    os.environ["CTF_CONFIG"] = "tests/configs/good.json"
     app = create_app()
     app.redis = fakeredis.FakeRedis()
     app.secret_key = 'my secret key'
@@ -217,3 +217,129 @@ def test_invites(app):
         }
 
         assert api_req(client.get, '/api/user', key2, 200)['team']['id'] == 1
+
+
+def test_submit(app):
+    with app.test_client() as client:
+
+        # Create our test users
+        user = auth(client, 'user')
+        no_team_user = auth(client, 'no_team_user')
+
+        # Give one a team
+        post = {'name': 'PPP'}
+        api_req(client.post, '/api/teams/', user, post, 201)
+
+        # Try to submit a fleg
+        fleg = {'flag': 'test_fleg'}
+        assert api_req(client.post, '/api/flags/', user, fleg, 201) == {
+            "points_earned": 30
+        }
+
+        # Fail due to lack of team
+        api_req(client.post, '/api/flags/', no_team_user, fleg, 403,
+                'You must be part of a team.')
+
+        # Fail due to bad fleg
+        fleg = {'flag': 'not_a_fleg'}
+        api_req(client.post, '/api/flags/', user, fleg, 400, 'Nope.')
+
+
+def test_challenges(app):
+    with app.test_client() as client:
+
+        # Create our test users
+        user = auth(client, 'user')
+        no_team_user = auth(client, 'no_team_user')
+
+        # Give one a team
+        post = {'name': 'PPP'}
+        api_req(client.post, '/api/teams/', user, post, 201)
+
+        # Try to get challenges
+        assert api_req(client.get, '/api/challenges/', user, None, 200) == {
+            "challenges": [
+                {
+                    "category": "example",
+                    "description": "This is a test of the web problems",
+                    "id": 2,
+                    "points": 10,
+                    "resources": [],
+                    "title": "Test Web"
+                },
+                {
+                    "category": "example",
+                    "description": "This is a test of the crypto problems",
+                    "id": 1,
+                    "points": 30,
+                    "resources": ["crypto.rb"],
+                    "title": "Test Crypto"
+                }
+            ]
+        }
+
+        # Test individual challenge info
+        assert api_req(client.get, '/api/challenges/2/', user, None, 200) == {
+            "category": "example",
+            "description": "This is a test of the web problems",
+            "id": 2,
+            "points": 10,
+            "resources": [],
+            "solved": False,
+            "title": "Test Web"
+        }
+
+        # Fail due to lack of team
+        api_req(client.get, '/api/challenges/', no_team_user, None, 403,
+                'You must be part of a team.')
+
+        # Submit flag for futher testing
+        fleg = {'flag': 'test_fleg_returns'}
+        api_req(client.post, '/api/flags/', user, fleg, 201)
+
+        # Test solved value change
+        assert api_req(client.get, '/api/challenges/2/', user, None, 200) == {
+            "category": "example",
+            "description": "This is a test of the web problems",
+            "id": 2,
+            "points": 10,
+            "resources": [],
+            "solved": True,
+            "title": "Test Web"
+        }
+
+        # Test if dependancies resolve
+        assert api_req(client.get, '/api/challenges/3/', user, None, 200) == {
+            "category": "example",
+            "description": "This is a test of the web problems",
+            "id": 3,
+            "points": 20,
+            "resources": [],
+            "solved": False,
+            "title": "Test Web Dep"
+        }
+
+
+def test_resources(app):
+    with app.test_client() as client:
+
+        # Create our test users
+        user = auth(client, 'user')
+        no_team_user = auth(client, 'no_team_user')
+
+        # Give one a team
+        post = {'name': 'PPP'}
+        api_req(client.post, '/api/teams/', user, post, 201)
+
+        # Try to get file (which we'll compare with the file)
+        test_file = open("tests/challenges/example/crypto.rb", 'r')
+        assert api_req(client.get, '/api/file/example/crypto.rb', user,
+                       None, 200) == test_file.read()
+        test_file.close()
+
+        # Fail due to lack of team
+        api_req(client.get, '/api/file/example/crypto.rb', no_team_user, None,
+                403, 'You must be part of a team.')
+
+        # Fail due to nx file
+        api_req(client.get, '/api/file/example/nx.rb', user, None, 404)

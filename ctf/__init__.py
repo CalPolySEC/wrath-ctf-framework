@@ -3,7 +3,7 @@ import os
 import flask
 import redis
 from werkzeug import exceptions
-from . import api, frontend, ext
+from . import api, frontend, ext, setup
 from .models import db
 
 
@@ -14,8 +14,13 @@ def create_app():
     if 'CTF_CONFIG' in os.environ:
         config_file = os.environ['CTF_CONFIG']
 
-    with open(config_file, 'r') as config:
+    try:
+        config = open(config_file, 'r')
         app.config.update(json.load(config))
+    except IOError:
+        raise IOError("The CTF configuration file could not be found")
+    except ValueError:
+        raise ValueError("The CTF configuration file was malformed")
 
     app.redis = redis.StrictRedis()
 
@@ -26,6 +31,7 @@ def create_app():
     @app.before_first_request
     def create_db():
         db.create_all()
+        setup.build_challenges()
 
     @app.context_processor
     def inject_authed():

@@ -7,7 +7,7 @@ import os
 
 @pytest.fixture
 def app(monkeypatch):
-    os.environ["CTF_CONFIG"] = "tests/test_config.json"
+    os.environ["CTF_CONFIG"] = "tests/configs/good.json"
     app = create_app()
     app.redis = fakeredis.FakeRedis()
     app.secret_key = 'my secret key'
