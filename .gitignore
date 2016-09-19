@@ -5,7 +5,7 @@ __pycache__
 .cache
 .coverage
 .tox
-venv
+venv*
 dict.txt
 backup.txt
 passwords/*.txt
