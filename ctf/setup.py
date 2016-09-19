@@ -3,7 +3,7 @@ from sqlalchemy.exc import IntegrityError
 from .ext import db
 from os import path
 from .models import Challenge, Resource
-from core import hash_fleg
+from .core import hash_fleg
 import json
 
 

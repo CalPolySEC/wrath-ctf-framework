@@ -248,7 +248,7 @@ def submit_fleg(team, flag):
 @ensure_team
 def view_challenges(team):
     chal_dicts = map(lambda c: c.chal_info(), core.get_challenges(team))
-    return jsonify({"challenges": chal_dicts})
+    return jsonify({"challenges": list(chal_dicts)})
 
 
 @bp.route('/challenges/<int:id>/')
