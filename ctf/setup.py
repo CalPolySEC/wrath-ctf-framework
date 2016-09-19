@@ -1,4 +1,5 @@
 from flask import current_app as app
+from sqlalchemy.exc import IntegrityError
 from .ext import db
 from os import path
 from .models import Challenge, Resource
@@ -23,10 +24,6 @@ def build_challenges():
                 if len(problem["prerequisites"]) > 0:
                     prereqs = Challenge.query.filter(
                         Challenge.title.in_(problem["prerequisites"])).all()
-                    if len(prereqs) != len(problem["prerequisites"]):
-                        print "Prereq mismatch on %s, probably due to a typo\
-                               in prereq name or ordering" % problem["title"]
-                        continue
                 challenge = Challenge(title=problem["title"],
                                       description=problem["description"],
                                       category=c,
@@ -42,7 +39,5 @@ def build_challenges():
                     db.session.add(resource)
                 try:
                     db.session.commit()
-                except:
-                    print "Something went wrong with challenge %s, skipping" \
-                     % problem["title"]
+                except IntegrityError:
                     db.session.rollback()
