@@ -1,0 +1,10 @@
+{
+    "SQLALCHEMY_DATABASE_URI":"sqlite://",
+    "SQLALCHEMY_TRACK_MODIFICATIONS": false,
+    "SECRET_KEY":"not secure brah",
+    "CTF": {
+        "name":"Wrath CTF",
+        "start_time":"2016-08-01T12:00:00.000Z",
+        "end_time":"2016-10-01T12:00:00.000Z"
+    }
+}
