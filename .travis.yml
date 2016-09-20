@@ -2,7 +2,7 @@ language: python
 matrix:
   include:
   - python: 3.5
-    env: TOXENV=py35,coveralls
+    env: TOXENV=py35
   - python: 3.5
     env: TOXENV=py35-devel
   - python: 3.4
@@ -10,7 +10,7 @@ matrix:
   - python: 3.3
     env: TOXENV=py33
   - python: 2.7
-    env: TOXENV=py27,coveralls
+    env: TOXENV=py27
   - python: 2.7
     env: TOXENV=py27-devel
   - python: 2.6
