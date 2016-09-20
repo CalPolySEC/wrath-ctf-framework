@@ -50,7 +50,7 @@ def check_prereqs(team, challenge):
 
 def get_challenges(team):
     all_challs = Challenge.query.order_by(Challenge.points).all()
-    return filter(lambda c: check_prereqs(team, c), all_challs)
+    return list(filter(lambda c: check_prereqs(team, c), all_challs))
 
 
 def get_challenge(team, id):
