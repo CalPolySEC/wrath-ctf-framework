@@ -24,6 +24,9 @@ def build_challenges():
                 if len(problem["prerequisites"]) > 0:
                     prereqs = Challenge.query.filter(
                         Challenge.title.in_(problem["prerequisites"])).all()
+                    if len(problem["prerequisites"]) != len(prereqs):
+                        raise ValueError("Prerequisite mismatch, %s" %
+                                         problem["title"])
                 challenge = Challenge(title=problem["title"],
                                       description=problem["description"],
                                       category=c,
