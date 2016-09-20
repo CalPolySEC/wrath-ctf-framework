@@ -8,13 +8,6 @@ WRATH CTF Framework
 
 This simple flask webapp takes password submission from teams, tallies score totals, and presents a leaderboard
 
-Todo
-----
-* Statistics and visualizations of difficulty, success, challenge popularity, completion speed, etc
-* Email/deliverable of the stats and visualizations at end of CTF
-* Time remaining til CTF end (auto-close challenges)
-* Stop Snoopin
-
 Development Environment
 -----------------------
 
