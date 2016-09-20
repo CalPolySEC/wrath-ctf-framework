@@ -1,7 +1,9 @@
 """JSON Bourne API"""
-from flask import Blueprint, request, current_app, abort, Response, jsonify
+from flask import Blueprint, request, current_app, abort, Response, jsonify, \
+    send_from_directory
 from itsdangerous import Signer, BadSignature, want_bytes
 from werkzeug import exceptions
+from functools import wraps
 from . import core, ext
 from ._compat import text_type
 from .core import CtfException
@@ -20,53 +22,70 @@ for code in exceptions.default_exceptions.keys():
         bp.errorhandler(code)(handle_error)
 
 
-def json_value(key, desired_type=None):
-    data = request.get_json()
-    try:
-        value = data[key]
-    except (KeyError, TypeError):
-        abort(400, 'Missing JSON value \'{0}\'.'.format(key))
-    if desired_type and not isinstance(value, desired_type):
-        if desired_type == text_type:
-            type_name = 'string'
-        else:
-            type_name = desired_type.__name__
-        abort(400, 'Expected \'{0}\' to be type {1}.'.format(key, type_name))
-    return value
+def param(key, desired_type=None):
+    """Return a decorator to parse a JSON request value."""
+    def decorator(view_func):
+        """The actual decorator"""
+        @wraps(view_func)
+        def inner(*args, **kwargs):
+            data = request.get_json()  # May raise a 400
+            try:
+                value = data[key]
+            except (KeyError, TypeError):
+                abort(400, "Missing JSON value '{0}'.".format(key))
+            if desired_type and not isinstance(value, desired_type):
+                # For the error message
+                if desired_type == text_type:
+                    type_name = 'string'
+                else:
+                    type_name = desired_type.__name__
+                abort(400, ("Expected '{0}' to be type {1}."
+                            .format(key, type_name)))
+            # Success, pass through to view function
+            kwargs[key] = value
+            return view_func(*args, **kwargs)
+        return inner
+    return decorator
 
 
 def get_signer():
     return Signer(current_app.secret_key, salt='wrath-ctf')
 
 
-def ensure_user():
-    header_name = 'X-Session-Key'
-    err_msg = 'A valid {0} header is required.'.format(header_name)
-    key = request.headers.get(header_name, '')
-    try:
-        signer = get_signer()
-        token = signer.unsign(key).decode('utf-8')
-    except (BadSignature, ValueError):
-        abort(403, err_msg)
-    user = core.user_for_token(token)
-    if user is None:
-        abort(403, err_msg)
-    return user
+def ensure_user(view_func):
+    """Decorator that errors if the user is not logged in.
 
-
-def ensure_team(user=None):
-    """Return the team for the current user, or 403 if there is none.
-
-    user is optional. If omitted, it will be determined from ensure_user(). Be
-    careful when you supply this parameter, make sure it came from a call to
-    ensure_user().
+    This is analagous to frontend.ensure_user
     """
-    if user is None:
-        user = ensure_user()
-    team = core.team_for_user(user)
-    if team is None:
-        abort(403, 'You must be part of a team.')
-    return user.team
+    @wraps(view_func)
+    def inner(*args, **kwargs):
+        header_name = 'X-Session-Key'
+        err_msg = 'A valid {0} header is required.'.format(header_name)
+        key = request.headers.get(header_name, '')
+        try:
+            signer = get_signer()
+            token = signer.unsign(key).decode('utf-8')
+        except (BadSignature, ValueError):
+            abort(403, err_msg)
+        user = core.user_for_token(token)
+        if user is None:
+            abort(403, err_msg)
+        return view_func(user, *args, **kwargs)
+    return inner
+
+
+def ensure_team(view_func):
+    """Decorator that errors if the user is not part of a team.
+
+    This is analagous to frontend.ensure_team
+    """
+    @wraps(view_func)
+    @ensure_user
+    def inner(user, *args, **kwargs):
+        if user.team is None:
+            abort(403, 'You must be part of a team.')
+        return view_func(user.team, *args, **kwargs)
+    return inner
 
 
 def create_signed_key(user):
@@ -77,9 +96,9 @@ def create_signed_key(user):
 
 
 @bp.route('/users/', methods=['POST'])
-def create_user():
-    username = json_value('username', text_type)
-    password = json_value('password', text_type)
+@param('username', text_type)
+@param('password', text_type)
+def create_user(username, password):
     if not username or not password:
         abort(400, 'You must supply a username and password.')
     try:
@@ -91,9 +110,9 @@ def create_user():
 
 
 @bp.route('/sessions/', methods=['POST'])
-def login():
-    username = json_value('username', text_type)
-    password = json_value('password', text_type)
+@param('username', text_type)
+@param('password', text_type)
+def login(username, password):
     try:
         user = core.login(username, password)
     except CtfException as exc:
@@ -103,8 +122,8 @@ def login():
 
 
 @bp.route('/user')
-def me():
-    user = ensure_user()
+@ensure_user
+def me(user):
     user_obj = {
         'username': user.name,
         'team': None,
@@ -118,9 +137,9 @@ def me():
 
 
 @bp.route('/teams/', methods=['POST'])
-def create_team():
-    user = ensure_user()
-    name = json_value('name', text_type)
+@ensure_user
+@param('name', text_type)
+def create_team(user, name):
     try:
         team = core.create_team(user, name)
     except CtfException as exc:
@@ -132,8 +151,8 @@ def create_team():
 
 
 @bp.route('/teams/invited/')
-def invited_teams():
-    user = ensure_user()
+@ensure_user
+def invited_teams(user):
     teams = user.invites
     return jsonify({
         'teams': [{
@@ -144,20 +163,22 @@ def invited_teams():
 
 
 @bp.route('/user', methods=['PATCH'])
-def join_team():
-    user = ensure_user()
-    team_id = json_value('team', int)
+@ensure_user
+@param('team', int)
+def join_team(user, team):
     try:
-        core.join_team(team_id, user)
+        core.join_team(team, user)
     except CtfException as exc:
         abort(400, exc.message)
     return Response(status=204)
 
 
 @bp.route('/team', methods=['DELETE'])
-def leave_team():
-    user = ensure_user()
-    ensure_team(user=user)
+@ensure_user
+def leave_team(user):
+    # Note: same logic as ensure_team
+    if user.team is None:
+        abort(403, 'You must be part of a team.')
     core.leave_team(user)
     return Response(status=204)
 
@@ -185,39 +206,65 @@ def get_team(id):
 
 
 @bp.route('/team')
-def my_team():
-    team = ensure_team()
+@ensure_team
+def my_team(team):
     return get_team(team.id)
 
 
 @bp.route('/team', methods=['PATCH'])
-def rename_team():
-    team = ensure_team()
-    name = json_value('name', text_type)
+@ensure_team
+@param('name', text_type)
+def rename_team(team, name):
     try:
-        team = core.rename_team(team, name)
+        core.rename_team(team, name)
     except CtfException as exc:
         abort(409, exc.message)
     return Response(status=204)
 
 
 @bp.route('/team/members', methods=['POST'])
-def invite_user():
-    team = ensure_team()
-    user = json_value('username', text_type)
+@ensure_team
+@param('username', text_type)
+def invite_user(team, username):
     try:
-        core.create_invite(team, user)
+        core.create_invite(team, username)
     except CtfException as exc:
         abort(400, exc.message)
     return Response(status=204)
 
 
 @bp.route('/flags/', methods=['POST'])
-def submit_fleg():
-    team = ensure_team()
-    fleg = json_value('flag', text_type)
+@ensure_team
+@param('flag', text_type)
+def submit_fleg(team, flag):
     try:
-        db_fleg = core.add_fleg(fleg, team)
+        solved = core.add_fleg(flag, team)
     except CtfException as exc:
         abort(400, exc.message)
-    return jsonify({'points_earned': db_fleg.level.points}), 201
+    return jsonify({'points_earned': solved.points}), 201
+
+
+@bp.route('/challenges/')
+@ensure_team
+def view_challenges(team):
+    chal_dicts = map(lambda c: c.chal_info(), core.get_challenges(team))
+    return jsonify({"challenges": list(chal_dicts)})
+
+
+@bp.route('/challenges/<int:id>/')
+@ensure_team
+def challenge_info(team, id):
+    chal = core.get_challenge(team, id)
+    ret = chal.chal_info()
+    ret.update({"solved": chal in team.challenges})
+    return jsonify(ret)
+
+
+@bp.route('/file/<category>/<name>')
+@ensure_team
+def get_resource(team, category, name):
+    resource = core.get_resource(team, category, name)
+    if resource is None:
+        abort(404)
+    else:
+        return send_from_directory(resource.path, resource.name)

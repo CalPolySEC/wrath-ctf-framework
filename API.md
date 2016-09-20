@@ -12,6 +12,8 @@
   - [List teams you're invited to](#list-teams-youre-invited-to)
   - [Join a team](#join-a-team)
   - [Leave team](#leave-team)
+- [Challenges](#challenges)
+  - [View Challenges](#view-challenges)
 
 # Users
 
@@ -28,7 +30,7 @@ POST /api/users/
 }
 ```
 
-**Request**
+**Response**
 
 ```json
 {
@@ -208,4 +210,28 @@ DELETE /api/team
 
 ```http
 HTTP/2.0 204 No Content
+```
+
+# Challenges
+
+### View Challenges
+
+```http
+GET /api/challenges
+```
+
+**Response**
+
+```json
+{
+  "challenges": [
+    {
+      "category": "example",
+      "description": "This is a test of the web problems",
+      "id": 2,
+      "points": 10,
+      "title": "Test Web"
+    }
+  ]
+}
 ```

@@ -8,6 +8,15 @@ invite_table = \
              )
 
 
+CleverName = \
+    db.Table('clever_name', db.Model.metadata,
+             db.Column('team_id', db.Integer, db.ForeignKey('team.id')),
+             db.Column('challenge_id', db.Integer,
+                       db.ForeignKey('challenge.id')),
+             db.Column('earned_on', db.DateTime, server_default=db.func.now())
+             )
+
+
 class User(db.Model):
     __tablename__ = 'user'
     id = db.Column(db.Integer, primary_key=True)
@@ -25,13 +34,36 @@ class Team(db.Model):
     points = db.Column(db.Integer, default=0)
     last_fleg = db.Column(db.DateTime, server_default=db.func.now())
     invited = db.relationship('User', secondary=invite_table)
+    challenges = db.relationship('Challenge', secondary=CleverName,
+                                 backref='team', collection_class=set)
 
 
-class Fleg(db.Model):
+class Challenge(db.Model):
+    __tablename__ = "challenge"
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    user = db.relationship('User', backref='flegs')
-    team_id = db.Column(db.Integer, db.ForeignKey('team.id'))
-    team = db.relationship('Team', backref='flegs')
+    title = db.Column(db.String(128), unique=True)
+    description = db.Column(db.Text)
+    category = db.Column(db.String(123))
     points = db.Column(db.Integer)
-    earned_on = db.Column(db.DateTime, server_default=db.func.now())
+    fleg_hash = db.Column(db.String(128), unique=True)
+    teams_solved = db.relationship('Team', secondary=CleverName,
+                                   backref='challenge', collection_class=set)
+    prerequisite_id = db.Column(db.Integer, db.ForeignKey('challenge.id'))
+    prerequisites = db.relationship('Challenge', collection_class=set)
+    resources = db.relationship('Resource', backref='challenge')
+
+    def chal_info(self):
+        return {"id": self.id,
+                "title": self.title,
+                "description": self.description,
+                "category": self.category,
+                "points": self.points,
+                "resources": [r.name for r in self.resources]}
+
+
+class Resource(db.Model):
+    __tablename__ = "resource"
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(128))
+    path = db.Column(db.String(128))
+    challenge_id = db.Column(db.Integer, db.ForeignKey('challenge.id'))

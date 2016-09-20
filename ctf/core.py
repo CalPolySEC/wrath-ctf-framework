@@ -6,7 +6,7 @@ from flask import current_app
 from werkzeug.security import safe_str_cmp
 from ._compat import want_bytes
 from .ext import db
-from .models import Team, User, Fleg
+from .models import Team, User, Challenge, Resource
 import hashlib
 import os
 
@@ -20,8 +20,8 @@ class CtfException(Exception):
 def ensure_active():
     fmt = '%Y-%m-%dT%H:%M:%S.%fZ'
     now = datetime.utcnow()
-    start = datetime.strptime(app.config['CTF_SETTINGS']['start_time'], fmt)
-    end = datetime.strptime(app.config['CTF_SETTINGS']['end_time'], fmt)
+    start = datetime.strptime(current_app.config['CTF']['start_time'], fmt)
+    end = datetime.strptime(current_app.config['CTF']['end_time'], fmt)
     if now < start:
         raise CtfException('The competition has not started yet. Calm down.')
     elif now > end:
@@ -29,11 +29,50 @@ def ensure_active():
 
 
 def get_teams():
+    # TODO: Team.points ought to be a SQL sum instead of denormalized
     return Team.query.order_by(Team.points.desc(), Team.last_fleg).all()
 
 
 def get_team(id):
-    return Team.query.filter_by(id=id).first()
+    return Team.query.get(id)
+
+
+def get_name():
+    return current_app.config['CTF']['name']
+
+
+def check_prereqs(team, challenge):
+    if challenge.prerequisites is None:
+        return True
+    else:
+        return challenge.prerequisites <= team.challenges
+
+
+def get_challenges(team):
+    all_challs = Challenge.query.order_by(Challenge.points).all()
+    return list(filter(lambda c: check_prereqs(team, c), all_challs))
+
+
+def get_challenge(team, id):
+    chal = Challenge.query.get(id)
+    if chal is None or not check_prereqs(team, chal):
+        return None
+    else:
+        return chal
+
+
+def get_resource(team, category, name):
+    resource = Resource.query.filter(Resource.name == name).\
+               join(Challenge).\
+               filter(Challenge.category == category).first()
+    if resource is None or not check_prereqs(team, resource.challenge):
+        return None
+    else:
+        return resource
+
+
+def hash_fleg(fleg):
+    return hashlib.sha256(want_bytes(fleg)).hexdigest()
 
 
 def create_session_key(user):
@@ -47,10 +86,6 @@ def user_for_token(token):
     if not user_id:
         return None
     return User.query.filter_by(id=int(user_id)).first()
-
-
-def team_for_user(user):
-    return user.team
 
 
 def create_user(username, password):
@@ -114,7 +149,7 @@ def create_invite(team, username):
 
 
 def join_team(team_id, user):
-    team = Team.query.filter_by(id=team_id).first()
+    team = Team.query.get(team_id)
     if not team or team not in user.invites:
         raise CtfException('You have not been invited to this team.')
     user.team = team
@@ -132,18 +167,18 @@ def leave_team(user):
 def add_fleg(fleg, team):
     ensure_active()
 
-    fleg_hash = hashlib.sha256(want_bytes(fleg)).hexdigest()
-    db_fleg = Fleg.query.filter_by(hash=fleg_hash).first()
+    fleg_hash = hash_fleg(fleg)
+    solved = Challenge.query.filter_by(fleg_hash=fleg_hash).first()
 
-    if db_fleg is None:
+    if solved is None:
         raise CtfException('Nope.')  # fleg incorrect
-    elif db_fleg.level in team.levels:
+    elif solved in team.challenges:
         raise CtfException('You\'ve already entered that flag.')
 
-    team.levels.append(db_fleg.level)
-    team.points += db_fleg.level.points
+    team.challenges.add(solved)
+    team.points += solved.points
     team.last_fleg = db.func.now()
     db.session.add(team)
     db.session.commit()
 
-    return db_fleg
+    return solved

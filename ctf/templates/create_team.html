@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% macro field(form_field) -%}
+      {{ form_field.label(class='sr-only') }}
+      {{ form_field(class='form-control', placeholder=form_field.label.text, required=True, **kwargs) }}
+{%- endmacro %}
+
+{% block body %}
+    <form method="POST">
+      {{ form.hidden_tag() }}
+      <h2>Register</h2>
+      {{ field(form.name, autofocus=True) }}
+      {{ form.submit(class='btn btn-lg btn-primary btn-block') }}
+    </form>
+{%- endblock %}

@@ -4,6 +4,9 @@ except ImportError:
     from urlparse import urlparse
 
 
+# HACK: silence flakes unused import issue
+urlparse
+
 text_type = type(u'')
 
 

@@ -2,14 +2,13 @@ from ctf import core, create_app
 from ctf.ext import db
 from ctf.frontend import is_safe_url
 import fakeredis
-import os
 import pytest
-import tempfile
+import os
 
 
 @pytest.fixture
 def app():
-    os.environ['DATABASE_URL'] = 'sqlite:///%s' % tempfile.mktemp()
+    os.environ["CTF_CONFIG"] = "tests/configs/good.json"
     app = create_app()
     app.redis = fakeredis.FakeRedis()
     app.secret_key = 'my secret key'
