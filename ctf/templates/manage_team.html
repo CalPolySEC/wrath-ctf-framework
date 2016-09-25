@@ -6,10 +6,11 @@
 {%- endmacro %}
 
 {% block body %}
+    <h1>{{team.name}}</h1>
     <form method="POST">
-      {{ create_form.hidden_tag() }}
-      <h2>Create Team</h2>
-      {{ field(create_form.name, autofocus=True) }}
-      {{ create_form.submit(class='btn btn-lg btn-primary btn-block') }}
+      {{ invite_form.hidden_tag() }}
+      <h2>Invite User</h2>
+      {{ field(invite_form.name, autofocus=True) }}
+      {{ invite_form.submit(class='btn btn-lg btn-primary btn-block') }}
     </form>
 {%- endblock %}

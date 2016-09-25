@@ -6,7 +6,7 @@ from flask_wtf.csrf import validate_csrf
 from . import core
 from ._compat import urlparse
 from .core import CtfException
-from .forms import CreateForm, LoginForm, TeamForm, SubmitForm
+from .forms import CreateForm, LoginForm, TeamForm, SubmitForm, InviteForm
 
 
 bp = Blueprint('frontend', __name__)
@@ -115,16 +115,16 @@ def create_user():
 
 @bp.route('/team/', methods=['GET', 'POST'])
 @ensure_user
-def manage_team(user):
+def join_team(user):
     code = 200
     name = core.get_name()
-    form = TeamForm()
+    create_form = TeamForm()
     if user.team is not None:
-        return redirect(url_for('.team_page', id=user.team.id), code=303)
+        return redirect(url_for('.manage_team'), code=303)
 
-    if form.validate_on_submit():
+    if create_form.validate_on_submit():
         try:
-            core.create_team(user, form.name.data)
+            core.create_team(user, create_form.name.data)
         except CtfException as exc:
             flash(exc.message, 'danger')
             code = 409
@@ -134,8 +134,26 @@ def manage_team(user):
         # Attempted submit, but form validation failed
         code = 400
 
-    flash_wtf_errors(form)
-    return render_template('create_team.html', name=name, form=form), code
+    flash_wtf_errors(create_form)
+    return render_template('create_team.html', name=name,
+                           create_form=create_form), code
+
+
+@bp.route('/manage/', methods=['GET', 'POST'])
+@ensure_team
+def manage_team(team):
+    name = core.get_name()
+    invite_form = InviteForm()
+    if invite_form.validate_on_submit():
+        try:
+            core.create_invite(team, invite_form.name.data)
+        except CtfException as exc:
+            flash(exc.message, 'danger')
+        else:
+            flash('%s was successfully invited' % invite_form.name.data)
+    flash_wtf_errors(invite_form)
+    return render_template('manage_team.html', name=name, team=team,
+                           invite_form=invite_form)
 
 
 @bp.route('/login/', methods=['GET', 'POST'])
