@@ -37,6 +37,10 @@ def get_team(id):
     return Team.query.get(id)
 
 
+def get_team_by_name(name):
+    return Team.query.filter(Team.name == name).first()
+
+
 def get_name():
     return current_app.config['CTF']['name']
 

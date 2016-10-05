@@ -6,7 +6,8 @@ from flask_wtf.csrf import validate_csrf
 from . import core
 from ._compat import urlparse
 from .core import CtfException
-from .forms import CreateForm, LoginForm, TeamForm, SubmitForm, InviteForm
+from .forms import CreateForm, LoginForm, TeamForm, SubmitForm, InviteForm, \
+                   JoinForm
 
 
 bp = Blueprint('frontend', __name__)
@@ -119,6 +120,7 @@ def join_team(user):
     code = 200
     name = core.get_name()
     create_form = TeamForm()
+    join_form = JoinForm()
     if user.team is not None:
         return redirect(url_for('.manage_team'), code=303)
 
@@ -130,13 +132,23 @@ def join_team(user):
             code = 409
         else:
             return redirect(url_for('.home_page'), code=303)
+    elif join_form.validate_on_submit():
+        team = core.get_team_by_name(join_form.join_name.data)
+        try:
+            core.join_team(team.id, user)
+        except CtfException as exc:
+            flash(exc.message, 'danger')
+            code = 400
+        else:
+            return redirect(url_for('.home_page'), code=303)
     elif request.method == 'POST':
         # Attempted submit, but form validation failed
         code = 400
 
     flash_wtf_errors(create_form)
+    flash_wtf_errors(join_form)
     return render_template('create_team.html', name=name,
-                           create_form=create_form), code
+                           create_form=create_form, join_form=join_form), code
 
 
 @bp.route('/manage/', methods=['GET', 'POST'])
