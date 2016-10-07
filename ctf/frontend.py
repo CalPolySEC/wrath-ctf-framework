@@ -209,30 +209,6 @@ def snoopin():
     return redirect('https://www.youtube.com/watch?v=dQw4w9WgXcQ', code=303)
 
 
-<<<<<<< HEAD
-=======
-@bp.route('/submit/', methods=['GET', 'POST'])
-@ensure_team
-def submit_fleg(team):
-    """Attempt to submit a fleg, and redirect to the fleg page."""
-    form = SubmitForm()
-    if form.validate_on_submit():
-        # Deliver swift justice
-        if form.fleg.data == 'V375BrzPaT':
-            return snoopin()
-        try:
-            solved = core.add_fleg(form.fleg.data, team)
-        except CtfException as exc:
-            flash(exc.message, 'danger')
-        else:
-            flash('Correct! You have earned {0:d} points for your team.'
-                  .format(solved.points), 'success')
-
-        return redirect(url_for('.submit_fleg'), code=303)
-    return render_template('submit.html', form=form)
-
-
->>>>>>> master
 @bp.route('/file/<category>/<name>/')
 @ensure_team
 def get_resource(team, category, name):
