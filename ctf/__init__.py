@@ -3,7 +3,7 @@ import os
 import flask
 import redis
 from werkzeug import exceptions
-from . import api, frontend, ext, setup
+from . import api, core, frontend, ext, setup
 from .models import db
 
 
@@ -34,13 +34,14 @@ def create_app():
         setup.build_challenges()
 
     @app.context_processor
-    def inject_authed():
-        """This should NOT be used to secure access control.
+    def inject_jinja_globals():
+        """The authed flag should NOT be used to secure access control.
 
         The aim of the 'authed' global is simply better link rendering in
         templates.
         """
-        return {'authed': 'key' in flask.session}
+        return {'authed': 'key' in flask.session,
+                'name': core.get_name()}
 
     def handle_error(exc):
         if not isinstance(exc, exceptions.HTTPException):
