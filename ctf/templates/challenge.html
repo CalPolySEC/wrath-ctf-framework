@@ -1,4 +1,10 @@
 {% extends 'base.html' %}
+
+{% macro field(form_field) -%}
+      {{ form_field.label(class='sr-only') }}
+      {{ form_field(class='form-control', placeholder=form_field.label.text, required=True, **kwargs) }}
+{%- endmacro %}
+
 {% block body %}
 <div class="container">
     {%- for chal in challenges %}
@@ -25,7 +31,18 @@
                             <a href="{{resource_urls[resource.name]}}">
                             {{resource.name}}</a>
                             <br>
-                            {% endfor %}
+                            {%- endfor %}
+                            {%- if chal not in team.challenges %}
+                            <form method="POST">
+                                {{ form.hidden_tag() }}
+                                <div class="input-group input-group-lg">
+                                    {{ field(form.fleg, autofocus=True) }}
+                                    <span class="input-group-btn">
+                                        {{ form.submit(class='btn btn-primary') }}
+                                    </span>
+                                </div>
+                            </form>
+                            {%- endif %}
                     </td></tr>
                 </table>
             </div>
