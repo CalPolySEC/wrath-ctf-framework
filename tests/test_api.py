@@ -194,10 +194,10 @@ def test_invites(app):
                 'Expected \'team\' to be type int.')
 
         # Bad accepts
-        set_team(key1, 1, 400, 'You have not been invited to this team.')
-        set_team(key2, 1, 400, 'You have not been invited to this team.')
-        set_team(key1, 1337, 400, 'You have not been invited to this team.')
-        set_team(key2, 1337, 400, 'You have not been invited to this team.')
+        set_team(key1, 1, 403, 'You have not been invited to this team.')
+        set_team(key2, 1, 403, 'You have not been invited to this team.')
+        set_team(key1, 1337, 403, 'You have not been invited to this team.')
+        set_team(key2, 1337, 403, 'You have not been invited to this team.')
 
         # Valid invite
         invite_user(key1, 'user😊', 204)
