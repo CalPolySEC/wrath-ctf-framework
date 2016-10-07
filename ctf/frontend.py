@@ -73,7 +73,6 @@ def challenge_page(team):
         for r in c.resources:
             resource_urls[r.name] = url_for('.get_resource',
                                             category=c.category, name=r.name)
-    form = SubmitForm()
     return render_template('challenge.html', name=name, challenges=challenges,
                            team=team, form=form, resource_urls=resource_urls)
 
