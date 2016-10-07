@@ -8,7 +8,10 @@
 {% block body %}
 <div class="container">
     {%- for chal in challenges %}
-    <div class="panel panel-default" id="accordion-{{chal.id}}">
+    <div class="panel
+            {%- if chal in team.challenges %} panel-success
+            {%- else %} panel-default{% endif -%}
+            " id="accordion-{{chal.id}}">
         <div class="panel-heading">
             <h4 class="panel-title">
                 <a data-toggle="collapse"
