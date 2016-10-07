@@ -45,35 +45,31 @@ def ensure_team(fn):
 
 @bp.route('/')
 def home_page():
-    name = core.get_name()
     teams = core.get_teams()
-    return render_template('home.html', name=name, teams=teams)
+    return render_template('home.html', teams=teams)
 
 
 @bp.route('/challenges/')
 @ensure_team
 def challenge_page(team):
-    name = core.get_name()
     challenges = core.get_challenges(team)
     resource_urls = {}
     for c in challenges:
         for r in c.resources:
             resource_urls[r.name] = url_for('.get_resource',
                                             category=c.category, name=r.name)
-    return render_template('challenge.html', name=name, challenges=challenges,
+    return render_template('challenge.html', challenges=challenges,
                            team=team, resource_urls=resource_urls)
 
 
 @bp.route('/teams/<int:id>/')
 def team_page(id):
     """Get the page for a specific team."""
-    name = core.get_name()
     team = core.get_team(id)
     if not team:
         abort(404)
     categories = []
-    return render_template('team.html', name=name, team=team,
-                           categories=categories)
+    return render_template('team.html', team=team, categories=categories)
 
 
 def redirect_next(fallback, **kwargs):
@@ -93,7 +89,6 @@ def flash_wtf_errors(form):
 @bp.route('/register/', methods=['GET', 'POST'])
 def create_user():
     code = 200
-    name = core.get_name()
     form = CreateForm()
 
     if form.validate_on_submit():
@@ -111,14 +106,13 @@ def create_user():
         code = 400
 
     flash_wtf_errors(form)
-    return render_template('register.html', name=name, form=form), code
+    return render_template('register.html', form=form), code
 
 
 @bp.route('/team/', methods=['GET', 'POST'])
 @ensure_user
 def join_team(user):
     code = 200
-    name = core.get_name()
     create_form = TeamForm()
     join_form = JoinForm()
     if user.team is not None:
@@ -147,14 +141,13 @@ def join_team(user):
 
     flash_wtf_errors(create_form)
     flash_wtf_errors(join_form)
-    return render_template('create_team.html', name=name,
-                           create_form=create_form, join_form=join_form), code
+    return render_template('create_team.html', create_form=create_form,
+                           join_form=join_form), code
 
 
 @bp.route('/manage/', methods=['GET', 'POST'])
 @ensure_team
 def manage_team(team):
-    name = core.get_name()
     invite_form = InviteForm()
     if invite_form.validate_on_submit():
         try:
@@ -164,7 +157,7 @@ def manage_team(team):
         else:
             flash('%s was successfully invited' % invite_form.name.data)
     flash_wtf_errors(invite_form)
-    return render_template('manage_team.html', name=name, team=team,
+    return render_template('manage_team.html', team=team,
                            invite_form=invite_form)
 
 
@@ -172,7 +165,6 @@ def manage_team(team):
 def login():
     """Log into a team with its password."""
     code = 200
-    name = core.get_name()
     form = LoginForm()
     if form.validate_on_submit():
         try:
@@ -185,7 +177,7 @@ def login():
             session['key'] = key
             return redirect_next(fallback=url_for('.home_page'), code=303)
     flash_wtf_errors(form)
-    return render_template('login.html', name=name, form=form), code
+    return render_template('login.html', form=form), code
 
 
 @bp.route('/logout/')
@@ -223,8 +215,7 @@ def submit_fleg(team):
                   .format(solved.points), 'success')
 
         return redirect(url_for('.submit_fleg'), code=303)
-    name = core.get_name()
-    return render_template('submit.html', name=name, form=form)
+    return render_template('submit.html', form=form)
 
 
 @bp.route('/file/<category>/<name>/')
