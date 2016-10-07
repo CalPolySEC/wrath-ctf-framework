@@ -6,7 +6,7 @@ from flask import current_app
 from werkzeug.security import safe_str_cmp
 from ._compat import want_bytes
 from .ext import db
-from .models import Team, User, Challenge, Resource
+from .models import Team, User, Challenge, Resource, Solve
 import hashlib
 import os
 
@@ -29,8 +29,12 @@ def ensure_active():
 
 
 def get_teams():
-    # TODO: Team.points ought to be a SQL sum instead of denormalized
-    return Team.query.order_by(Team.points.desc(), Team.last_fleg).all()
+    # This is pure mystical alchemy
+    q = (db.session.query(Team, db.func.ifnull(db.func.sum(Challenge.points),
+                                               0).label('points'))
+         .outerjoin(Solve).outerjoin(Challenge).group_by(Team.id)
+         .order_by(db.desc('points'), db.func.min(Solve.earned_on), Team.id))
+    return q.all()
 
 
 def get_team(id):
@@ -180,8 +184,6 @@ def add_fleg(fleg, team):
         raise CtfException('You\'ve already entered that flag.')
 
     team.challenges.add(solved)
-    team.points += solved.points
-    team.last_fleg = db.func.now()
     db.session.add(team)
     db.session.commit()
 
