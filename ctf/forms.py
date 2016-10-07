@@ -22,3 +22,13 @@ class TeamForm(Form):
 class SubmitForm(Form):
     fleg = StringField('Flag', validators=[validators.Required()])
     submit = SubmitField('Go!')
+
+
+class InviteForm(Form):
+    name = StringField('Name', validators=[validators.Required()])
+    submit = SubmitField('Invite')
+
+
+class JoinForm(Form):
+    join_name = StringField('Name', validators=[validators.Required()])
+    submit = SubmitField('Join Team')

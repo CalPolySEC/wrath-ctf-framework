@@ -6,10 +6,16 @@
 {%- endmacro %}
 
 {% block body %}
-    <form method="POST">
-      {{ form.hidden_tag() }}
-      <h2>Register</h2>
-      {{ field(form.name, autofocus=True) }}
-      {{ form.submit(class='btn btn-lg btn-primary btn-block') }}
+    <form method="POST" class="col-md-6">
+      {{ create_form.hidden_tag() }}
+      <h2>Create Team</h2>
+      {{ field(create_form.name, autofocus=True) }}
+      {{ create_form.submit(class='btn btn-lg btn-primary btn-block') }}
+    </form>
+    <form method="POST" class="col-md-6">
+      {{ join_form.hidden_tag() }}
+      <h2>Join Invited Team</h2>
+      {{ field(join_form.join_name, autofocus=True) }}
+      {{ join_form.submit(class='btn btn-lg btn-primary btn-block') }}
     </form>
 {%- endblock %}
