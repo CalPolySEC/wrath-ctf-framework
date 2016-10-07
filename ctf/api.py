@@ -169,7 +169,7 @@ def join_team(user, team):
     try:
         core.join_team(team, user)
     except CtfException as exc:
-        abort(400, exc.message)
+        abort(403, exc.message)
     return Response(status=204)
 
 

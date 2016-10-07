@@ -138,7 +138,7 @@ def join_team(user):
             core.join_team(team.id, user)
         except CtfException as exc:
             flash(exc.message, 'danger')
-            code = 400
+            code = 403
         else:
             return redirect(url_for('.home_page'), code=303)
     elif request.method == 'POST':
