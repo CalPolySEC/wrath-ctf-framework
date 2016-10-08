@@ -10,11 +10,11 @@
         <th>#</th>
         <th>Team</th>
         <th>Points</th>
-        {%- for team in teams %}
+        {%- for team, points in teams %}
         <tr id="team{{ team.id }}">
           <td>{{ loop.index }}</td>
           <td><a href="{{ url_for('.team_page', id=team.id) }}">{{ team.name }}</a></td>
-          <td>{{ team.points }}</td>
+          <td>{{ points }}</td>
         </tr>
         {%- endfor %}
       </tbody>

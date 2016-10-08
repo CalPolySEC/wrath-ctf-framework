@@ -190,18 +190,20 @@ def leaderboard():
         'teams': [{
             'id': team.id,
             'name': team.name,
-            'points': team.points,
-        } for team in teams],
+            'points': points,
+        } for team, points in teams],
     })
 
 
 @bp.route('/teams/<int:id>')
 def get_team(id):
     team = core.get_team(id)
+    if team is None:
+        abort(404)
     return jsonify({
         'id': team.id,
         'name': team.name,
-        'points': team.points,
+        'points': team.get_points(),
     })
 
 

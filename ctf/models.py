@@ -8,13 +8,12 @@ invite_table = \
              )
 
 
-CleverName = \
-    db.Table('clever_name', db.Model.metadata,
-             db.Column('team_id', db.Integer, db.ForeignKey('team.id')),
-             db.Column('challenge_id', db.Integer,
-                       db.ForeignKey('challenge.id')),
-             db.Column('earned_on', db.DateTime, server_default=db.func.now())
-             )
+class Solve(db.Model):
+    __tablename__ = 'solve'
+    team_id = db.Column(db.Integer, db.ForeignKey('team.id'), primary_key=True)
+    challenge_id = db.Column(db.Integer, db.ForeignKey('challenge.id'),
+                             primary_key=True)
+    earned_on = db.Column(db.DateTime, server_default=db.func.now())
 
 
 class User(db.Model):
@@ -31,11 +30,12 @@ class Team(db.Model):
     __tablename__ = 'team'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(128), unique=True)
-    points = db.Column(db.Integer, default=0)
-    last_fleg = db.Column(db.DateTime, server_default=db.func.now())
     invited = db.relationship('User', secondary=invite_table)
-    challenges = db.relationship('Challenge', secondary=CleverName,
+    challenges = db.relationship('Challenge', secondary='solve',
                                  backref='team', collection_class=set)
+
+    def get_points(self):
+        return sum(c.points for c in self.challenges)
 
 
 class Challenge(db.Model):
@@ -46,7 +46,7 @@ class Challenge(db.Model):
     category = db.Column(db.String(123))
     points = db.Column(db.Integer)
     fleg_hash = db.Column(db.String(128), unique=True)
-    teams_solved = db.relationship('Team', secondary=CleverName,
+    teams_solved = db.relationship('Team', secondary='solve',
                                    backref='challenge', collection_class=set)
     prerequisite_id = db.Column(db.Integer, db.ForeignKey('challenge.id'))
     prerequisites = db.relationship('Challenge', collection_class=set)
