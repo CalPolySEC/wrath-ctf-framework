@@ -49,9 +49,21 @@ def home_page():
     return render_template('home.html', teams=teams)
 
 
-@bp.route('/challenges/')
+@bp.route('/challenges/', methods=['GET', 'POST'])
 @ensure_team
 def challenge_page(team):
+    form = SubmitForm()
+    if form.validate_on_submit():
+        # Deliver swift justice
+        if form.fleg.data == 'V375BrzPaT':
+            return snoopin()
+        try:
+            solved = core.add_fleg(form.fleg.data, team)
+        except CtfException as exc:
+            flash(exc.message, 'danger')
+        else:
+            flash('Correct! You have earned {0:d} points for your team.'
+                  .format(solved.points), 'success')
     challenges = core.get_challenges(team)
     resource_urls = {}
     for c in challenges:
@@ -59,7 +71,7 @@ def challenge_page(team):
             resource_urls[r.name] = url_for('.get_resource',
                                             category=c.category, name=r.name)
     return render_template('challenge.html', challenges=challenges,
-                           team=team, resource_urls=resource_urls)
+                           team=team, form=form, resource_urls=resource_urls)
 
 
 @bp.route('/teams/<int:id>/')
@@ -195,27 +207,6 @@ def logout(user):
 @bp.route('/passwords.zip')
 def snoopin():
     return redirect('https://www.youtube.com/watch?v=dQw4w9WgXcQ', code=303)
-
-
-@bp.route('/submit/', methods=['GET', 'POST'])
-@ensure_team
-def submit_fleg(team):
-    """Attempt to submit a fleg, and redirect to the fleg page."""
-    form = SubmitForm()
-    if form.validate_on_submit():
-        # Deliver swift justice
-        if form.fleg.data == 'V375BrzPaT':
-            return snoopin()
-        try:
-            solved = core.add_fleg(form.fleg.data, team)
-        except CtfException as exc:
-            flash(exc.message, 'danger')
-        else:
-            flash('Correct! You have earned {0:d} points for your team.'
-                  .format(solved.points), 'success')
-
-        return redirect(url_for('.submit_fleg'), code=303)
-    return render_template('submit.html', form=form)
 
 
 @bp.route('/file/<category>/<name>/')

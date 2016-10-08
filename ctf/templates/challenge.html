@@ -1,39 +1,56 @@
 {% extends 'base.html' %}
+
+{% macro field(form_field) -%}
+      {{ form_field.label(class='sr-only') }}
+      {{ form_field(class='form-control', placeholder=form_field.label.text, required=True, **kwargs) }}
+{%- endmacro %}
+
 {% block body %}
 <div class="container">
-    {%- for chal in challenges %}
-    <div class="panel
-            {%- if chal in team.challenges %} panel-success
-            {%- else %} panel-default{% endif -%}
-            " id="accordion-{{chal.id}}">
-        <div class="panel-heading">
-            <h4 class="panel-title">
-                <a data-toggle="collapse"
-                   data-parent="#accordion-{{chal.id}}"
-                   href="#collapse-{{chal.id}}">{{chal.title}}</a>
-            </h4>
-        </div>
-        <div id="collapse-{{chal.id}}" class="panel-collapse collapse">
-            <div class="panel-body">
-                <table class="table">
-                    <tr><td>
-                            <b>Category:</b> {{chal.category}}
-                            <br>
-                            <b>Points:</b> {{chal.points}}
-                            <br>
-                            {{chal.description}}
-                            <br>
-                            <br>
-                            {%- for resource in chal.resources %}
-                            <a href="{{resource_urls[resource.name]}}">
-                            {{resource.name}}</a>
-                            <br>
-                            {% endfor %}
-                    </td></tr>
-                </table>
-            </div>
-        </div>
+  {%- for chal in challenges %}
+  <div class="panel
+      {%- if chal in team.challenges %} panel-success
+      {%- else %} panel-default{% endif -%}
+      " id="accordion-{{chal.id}}">
+    <div class="panel-heading">
+      <h4 class="panel-title">
+        <a data-toggle="collapse"
+           data-parent="#accordion-{{chal.id}}"
+           href="#collapse-{{chal.id}}">{{chal.title}}</a>
+      </h4>
     </div>
-    {% endfor %}
+    <div id="collapse-{{chal.id}}" class="panel-collapse collapse">
+      <div class="panel-body">
+        <table class="table">
+          <tr><td>
+            <b>Category:</b> {{chal.category}}
+            <br>
+            <b>Points:</b> {{chal.points}}
+            <br>
+            {{chal.description}}
+            <br>
+            <br>
+            {%- for resource in chal.resources %}
+            <a href="{{resource_urls[resource.name]}}">
+            {{resource.name}}</a>
+            <br>
+            {%- endfor %}
+            {%- if chal not in team.challenges %}
+            <form method="POST">
+              {{ form.hidden_tag() }}
+              <div class="input-group input-group-lg">
+                {{ field(form.fleg, autofocus=True, value='') }}
+                <span class="input-group-btn">
+                  {{ form.submit(class='btn btn-primary') }}
+                </span>
+              </div>
+            </form>
+            {%- endif %}
+          </td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
 </div>
 {%- endblock %}
