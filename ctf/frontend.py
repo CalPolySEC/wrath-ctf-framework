@@ -54,11 +54,12 @@ def home_page():
 def challenge_page(team):
     form = SubmitForm()
     if form.validate_on_submit():
+        fleg = form.fleg.data.strip()
         # Deliver swift justice
-        if form.fleg.data == 'V375BrzPaT':
+        if fleg == 'V375BrzPaT':
             return snoopin()
         try:
-            solved = core.add_fleg(form.fleg.data, team)
+            solved = core.add_fleg(fleg, team)
         except CtfException as exc:
             flash(exc.message, 'danger')
         else:
