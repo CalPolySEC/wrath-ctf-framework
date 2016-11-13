@@ -22,27 +22,33 @@ for code in exceptions.default_exceptions.keys():
         bp.errorhandler(code)(handle_error)
 
 
-def param(key, desired_type=None):
+def get_json_value(data, key, desired_type, optional):
+    """Return data[key], with type checking."""
+    try:
+        value = data[key]
+    except (KeyError, TypeError):
+        if optional:
+            return None
+        abort(400, "Missing JSON value '{0}'.".format(key))
+
+    if desired_type is not None and not isinstance(value, desired_type):
+        if desired_type == text_type:
+            type_name = 'string'
+        else:
+            type_name = desired_type.__name__
+        abort(400, "Expected '{0}' to be type {1}.".format(key, type_name))
+
+    return value
+
+
+def param(key, desired_type=None, optional=False):
     """Return a decorator to parse a JSON request value."""
     def decorator(view_func):
         """The actual decorator"""
         @wraps(view_func)
         def inner(*args, **kwargs):
             data = request.get_json()  # May raise a 400
-            try:
-                value = data[key]
-            except (KeyError, TypeError):
-                abort(400, "Missing JSON value '{0}'.".format(key))
-            if desired_type and not isinstance(value, desired_type):
-                # For the error message
-                if desired_type == text_type:
-                    type_name = 'string'
-                else:
-                    type_name = desired_type.__name__
-                abort(400, ("Expected '{0}' to be type {1}."
-                            .format(key, type_name)))
-            # Success, pass through to view function
-            kwargs[key] = value
+            kwargs[key] = get_json_value(data, key, desired_type, optional)
             return view_func(*args, **kwargs)
         return inner
     return decorator
