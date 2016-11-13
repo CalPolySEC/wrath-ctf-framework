@@ -30,6 +30,7 @@ class Team(db.Model):
     __tablename__ = 'team'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(128), unique=True)
+    hide_rank = db.Column(db.Boolean, default=False)
     invited = db.relationship('User', secondary=invite_table)
     challenges = db.relationship('Challenge', secondary='solve',
                                  backref='team', collection_class=set)

@@ -221,10 +221,11 @@ def my_team(team):
 
 @bp.route('/team', methods=['PATCH'])
 @ensure_team
-@param('name', text_type)
-def rename_team(team, name):
+@param('name', text_type, optional=True)
+@param('hide_rank', bool, optional=True)
+def rename_team(team, name, hide_rank):
     try:
-        core.rename_team(team, name)
+        core.update_team(team, name, hide_rank)
     except CtfException as exc:
         abort(409, exc.message)
     return Response(status=204)

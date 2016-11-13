@@ -32,6 +32,7 @@ def get_teams():
     # This is pure mystical alchemy
     q = (db.session.query(Team, db.func.ifnull(db.func.sum(Challenge.points),
                                                0).label('points'))
+         .filter(Team.hide_rank == 0)
          .outerjoin(Solve).outerjoin(Challenge).group_by(Team.id)
          .order_by(db.desc('points'), db.func.min(Solve.earned_on), Team.id))
     return q.all()
@@ -133,11 +134,20 @@ def create_team(user, name):
     return team
 
 
-def rename_team(team, name):
-    if Team.query.filter((db.func.lower(Team.name) == name.lower()) &
-                         (Team.id != team.id)).count():
-        raise CtfException('That team name is taken.')
-    team.name = name
+def update_team(team, name=None, hide_rank=None):
+    if name is None and hide_rank is None:
+        # Nothing to do
+        return
+
+    if name is not None:
+        if Team.query.filter((db.func.lower(Team.name) == name.lower()) &
+                             (Team.id != team.id)).count():
+            raise CtfException('That team name is taken.')
+        team.name = name
+
+    if hide_rank is not None:
+        team.hide_rank = hide_rank
+
     db.session.add(team)
     db.session.commit()
 

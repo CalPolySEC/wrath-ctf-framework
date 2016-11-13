@@ -135,11 +135,19 @@ def test_teams(app):
                 {'name': 'Hash Slinging Hackers'}, 201)
 
         # Team data
-        assert api_req(client.get, '/api/teams/1', key, 200) == {
+        assert api_req(client.get, '/api/teams/1', key, None, 200) == {
             'id': 1,
             'name': 'PPP',
             'points': 0,
         }
+
+        # Incorrect team id in URL
+        api_req(client.get, '/api/teams/3', key, None, 404, 'The requested ' +
+                'URL was not found on the server.  If you entered the URL ' +
+                'manually please check your spelling and try again.')
+
+        # Empty team patch
+        api_req(client.patch, '/api/team', key, {}, 204)
 
         # Can't rename to another team
         for name in ('PPP', 'Ppp'):
@@ -159,6 +167,14 @@ def test_teams(app):
             'teams': [
                 {'id': 1, 'name': 'PPP', 'points': 0},
                 {'id': 2, 'name': 'Hash Slinging Hackers', 'points': 0},
+            ],
+        }
+
+        # Hide team
+        api_req(client.patch, '/api/team', key, {'hide_rank': True}, 204)
+        assert api_req(client.get, '/api/teams/') == {
+            'teams': [
+                {'id': 1, 'name': 'PPP', 'points': 0},
             ],
         }
 
