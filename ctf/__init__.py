@@ -22,7 +22,8 @@ def create_app():
     except ValueError:
         raise ValueError("The CTF configuration file was malformed")
 
-    app.redis = redis.StrictRedis()
+    redis_url = app.config.get('REDIS_URL', 'redis://localhost')
+    app.redis = redis.StrictRedis.from_url(redis_url)
 
     # Setup extensions
     ext.db.init_app(app)
