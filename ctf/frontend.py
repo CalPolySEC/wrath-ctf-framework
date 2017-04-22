@@ -113,6 +113,7 @@ def create_user():
         else:
             key = core.create_session_key(user)
             session['key'] = key
+            session.permanent = True
             return redirect_next(fallback=url_for('.home_page'), code=303)
     elif request.method == 'POST':
         # Attempted submit, but form validation failed
@@ -188,6 +189,7 @@ def login():
         else:
             key = core.create_session_key(user)
             session['key'] = key
+            session.permanent = True
             return redirect_next(fallback=url_for('.home_page'), code=303)
     flash_wtf_errors(form)
     return render_template('login.html', form=form), code
