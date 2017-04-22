@@ -6,7 +6,6 @@
 {%- endmacro %}
 
 {% block body %}
-<div class="container">
   {%- for chal in challenges %}
   <div class="panel
       {%- if chal in team.challenges %} panel-success
@@ -52,5 +51,4 @@
     </div>
   </div>
   {% endfor %}
-</div>
 {%- endblock %}
