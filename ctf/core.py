@@ -30,8 +30,8 @@ def ensure_active():
 
 def get_teams():
     # This is pure mystical alchemy
-    q = (db.session.query(Team, db.func.ifnull(db.func.sum(Challenge.points),
-                                               0).label('points'))
+    q = (db.session.query(Team, db.func.coalesce(db.func.sum(Challenge.points),
+                                                 0).label('points'))
          .outerjoin(Solve).outerjoin(Challenge).group_by(Team.id)
          .order_by(db.desc('points'), db.func.min(Solve.earned_on), Team.id))
     return q.all()
