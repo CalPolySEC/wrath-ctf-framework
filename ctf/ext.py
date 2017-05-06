@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """All our extensions"""
-from flask.ext.sqlalchemy import SQLAlchemy
-from flask.ext.wtf import CsrfProtect
+from flask_sqlalchemy import SQLAlchemy
+from flask_wtf import CSRFProtect
 
 
-csrf = CsrfProtect()
+csrf = CSRFProtect()
 db = SQLAlchemy()

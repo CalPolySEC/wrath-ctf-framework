@@ -1,10 +1,14 @@
 language: python
 matrix:
   include:
+  - python: 3.6
+    env: TOXENV=py36-devel
+  - python: 3.6
+    env: TOXENV=py36
   - python: 3.5
     env: TOXENV=py35
   - python: 3.5
-    env: TOXENV=py35-devel
+    env: TOXENV=py35
   - python: 3.4
     env: TOXENV=py34
   - python: 3.3
