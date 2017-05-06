@@ -19,6 +19,11 @@ def build_challenges():
             except ValueError:
                 raise ValueError("%s was malformed" % config_file)
             for problem in config["problems"]:
+                problem['fleg_hash'] = hash_fleg(problem['fleg'])
+                del problem['fleg']
+
+                problem['category'] = c
+
                 # We put this first to avoid circular dependancies
                 prereqs = set()
                 if len(problem["prerequisites"]) > 0:
@@ -27,16 +32,16 @@ def build_challenges():
                     if len(problem["prerequisites"]) != len(prereqs):
                         raise ValueError("Prerequisite mismatch, %s" %
                                          problem["title"])
-                challenge = Challenge(title=problem["title"],
-                                      description=problem["description"],
-                                      category=c,
-                                      points=problem["points"],
-                                      fleg_hash=hash_fleg(problem["fleg"]),
-                                      prerequisites=set(prereqs))
+                problem['prerequisites'] = set(prereqs)
+
+                resources = problem['resources']
+                del problem['resources']
+
+                challenge = Challenge(**problem)
                 db.session.add(challenge)
-                for file in problem["resources"]:
+                for f in resources:
                     file_path = path.join(chal_path, c)
-                    resource = Resource(name=file,
+                    resource = Resource(name=f,
                                         path=file_path,
                                         challenge=challenge)
                     db.session.add(resource)
