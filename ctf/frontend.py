@@ -2,7 +2,7 @@
 from functools import wraps
 from flask import Blueprint, request, session, abort, redirect, \
                   render_template, url_for, flash, send_from_directory
-from flask_wtf.csrf import validate_csrf
+from flask_wtf.csrf import validate_csrf, ValidationError
 from . import core
 from ._compat import urlparse
 from .core import CtfException
@@ -199,7 +199,9 @@ def login():
 @ensure_user
 def logout(user):
     """Clear the session, and redirect to home."""
-    if not validate_csrf(request.args.get('token', '')):
+    try:
+        validate_csrf(request.args.get('token', ''))
+    except ValidationError:
         flash('Missing or incorrect CSRF token.')
         abort(400)
     session.clear()
