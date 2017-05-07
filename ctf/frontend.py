@@ -81,7 +81,7 @@ def team_page(id):
     team = core.get_team(id)
     if not team:
         abort(404)
-    solves = cores.get_challenges(team)
+    solves = core.get_challenges(team)
     return render_template('team.html', team=team, solves=solves)
 
 
