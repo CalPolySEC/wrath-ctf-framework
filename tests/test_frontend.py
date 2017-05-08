@@ -1,85 +1,130 @@
 # -*- coding: utf-8 -*-
-from ctf import create_app, ext, frontend
+from ctf import core, create_app, ext, frontend
 import fakeredis
+import flask
 import pytest
 import os
 
 
-@pytest.fixture
+@pytest.fixture(scope='function')
 def app(monkeypatch):
     os.environ["CTF_CONFIG"] = "tests/configs/good.json"
     app = create_app()
     app.redis = fakeredis.FakeRedis()
     app.secret_key = 'my secret key'
     app.debug = True
+
+    # In-memory database only
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite://'
+
     # We aren't trying to test CSRF here
     app.config['WTF_CSRF_CHECK_DEFAULT'] = False
     app.config['WTF_CSRF_ENABLED'] = False
     ext.csrf.exempt(frontend.bp)
+    # This will let us still test flask_wtf.csrf.validate_csrf from /logout/
     monkeypatch.setattr(frontend, 'validate_csrf', lambda d: d == 'token')
+
+    with app.app_context():
+        ext.db.create_all()
+
     return app
 
 
-def test_user_auth(app):
-    with app.test_client() as client:
-        def create_user(username, password, status, message=None):
-            rv = client.post('/register/', data={
-                'username': username,
-                'password': password,
-            })
-            if message is not None:
-                assert message in rv.data
-            assert rv.status_code == status
-            return rv
+@pytest.fixture(scope='function')
+def client(app):
+    with app.test_client() as cli:
+        yield cli
 
-        def login(username, password, status, message=None):
-            rv = client.post('/login/', data={
-                'username': username,
-                'password': password,
-            })
-            if message is not None:
-                assert message in rv.data
-            assert rv.status_code == status
-            return rv
 
-        # Should not be authed
-        rv = client.get('/team/')
-        assert rv.status_code == 303
-        assert '/login/' in rv.headers['Location']
-        rv = client.get('/login/')
-        assert b'You must be logged in to do that.' in rv.data
+@pytest.fixture
+def user(app, client):
+    username = 'harry'
+    password = 'expecto.patronum⚡'
+    with app.app_context():
+        user = core.create_user(username, password)
+        key = core.create_session_key(user)
 
-        # Form validation
-        rv = create_user('', '', 400)
-        assert b'Csrf Token: CSRF token missing' not in rv.data
+    with client.session_transaction() as sess:
+        sess['key'] = key
+
+
+def test_create_user(app, client):
+    """Assert that we can create a user."""
+    form_data = {'username': 'harry', 'password': 'expecto.patronum⚡'}
+    rv = client.post('/register/', data=form_data)
+    assert rv.status_code == 303
+    assert rv.location == 'http://localhost/'
+
+    with app.app_context():
+        user = core.user_for_token(flask.session['key'])
+        assert user.name == 'harry'
+
+
+@pytest.mark.parametrize('username,password', [
+    (None, None),
+    (None, ''),
+    ('', None),
+    ('', ''),
+    ('harry', ''),
+    ('', 'expecto.patronum⚡'),
+])
+def test_create_user_invalid(client, username, password):
+    """Assert that our form validates bad input."""
+    form_data = {}
+    if username is not None:
+        form_data['username'] = username
+    if password is not None:
+        form_data['password'] = password
+
+    rv = client.post('/register/', data=form_data)
+    assert rv.status_code == 400
+
+    if not username:
         assert b'Username: This field is required.' in rv.data
+    if not password:
         assert b'Password: This field is required.' in rv.data
 
-        # User creaton
-        rv = create_user('harry', 'expecto.patronum⚡', 303)
-        assert rv.headers['Location'] == 'http://localhost/'
-        # Should be logged in now
-        assert client.get('/team/').status_code == 200
 
-        # Logout
-        rv = client.get('/logout/?token=token')
-        assert rv.status_code == 303
-        # Double check
-        rv = client.get('/team/')
-        assert rv.status_code == 303
-        assert '/login/' in rv.headers['Location']
-        rv = client.get('/login/')
-        assert b'You must be logged in to do that.' in rv.data
+def test_create_existing_user(app, client, user):
+    """Assert that we can't create (case-insensitive) duplicate users."""
+    form_data = {'username': 'HaRrY', 'password': 'expecto.patronum⚡'}
+    rv = client.post('/register/', data=form_data)
+    assert rv.status_code == 409
+    assert b'That username is taken.' in rv.data
 
-        # Duplicate users
-        create_user('harry', 'badpw', 409, b'That username is taken.')
-        create_user('hArRy', 'badpw', 409, b'That username is taken.')
 
-        # Login
-        login('abc', 'badpw', 403, b'Incorrect username or password.')
-        login('harry', 'badpw', 403, b'Incorrect username or password.')
-        login('harry', 'harry', 403, b'Incorrect username or password.')
+def test_login(app, client, user):
+    """Assert that we can log in."""
+    form_data = {'username': 'harry', 'password': 'expecto.patronum⚡'}
+    rv = client.post('/login/', data=form_data)
+    assert rv.status_code == 303
+    assert rv.location == 'http://localhost/'
 
-        login('harry', 'expecto.patronum⚡', 303)  # This will set a token
-        # Should be logged in again
-        assert client.get('/team/').status_code == 200
+    with app.app_context():
+        user = core.user_for_token(flask.session['key'])
+        assert user.name == 'harry'
+
+
+@pytest.mark.parametrize('username,password', [
+    (None, None),
+    (None, ''),
+    ('', None),
+    ('', ''),
+    ('harry', ''),
+    ('', 'expecto.patronum⚡'),
+])
+def test_login_invalid(client, username, password):
+    """Assert that our login form validates bad input."""
+    form_data = {}
+    if username is not None:
+        form_data['username'] = username
+    if password is not None:
+        form_data['password'] = password
+
+    rv = client.post('/login/', data=form_data)
+    assert rv.status_code == 400
+
+    if not username:
+        assert b'Username: This field is required.' in rv.data
+    if not password:
+        assert b'Password: This field is required.' in rv.data
