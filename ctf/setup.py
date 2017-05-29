@@ -7,6 +7,27 @@ from .core import hash_fleg
 import json
 
 
+def build_problem_options(problem_config, category):
+    problem = dict(problem_config)
+    problem.pop('fleg')
+    problem.pop('resources')
+
+    problem['fleg_hash'] = hash_fleg(problem_config['fleg'])
+    problem['category'] = category
+
+    # We put this first to avoid circular dependancies
+    prereqs = set()
+    if len(problem["prerequisites"]) > 0:
+        prereqs = Challenge.query.filter(
+            Challenge.title.in_(problem["prerequisites"])).all()
+        if len(problem["prerequisites"]) != len(prereqs):
+            raise ValueError("Prerequisite mismatch, %s" %
+                             problem["title"])
+    problem['prerequisites'] = set(prereqs)
+
+    return problem
+
+
 def build_challenges():
     chal_path = path.join(app.root_path, "../",
                           app.config['CTF']['challenges'])
@@ -19,24 +40,13 @@ def build_challenges():
             except ValueError:
                 raise ValueError("%s was malformed" % config_file)
             for problem in config["problems"]:
-                # We put this first to avoid circular dependancies
-                prereqs = set()
-                if len(problem["prerequisites"]) > 0:
-                    prereqs = Challenge.query.filter(
-                        Challenge.title.in_(problem["prerequisites"])).all()
-                    if len(problem["prerequisites"]) != len(prereqs):
-                        raise ValueError("Prerequisite mismatch, %s" %
-                                         problem["title"])
-                challenge = Challenge(title=problem["title"],
-                                      description=problem["description"],
-                                      category=c,
-                                      points=problem["points"],
-                                      fleg_hash=hash_fleg(problem["fleg"]),
-                                      prerequisites=set(prereqs))
+                problem_dict = build_problem_options(problem, c)
+                challenge = Challenge(**problem_dict)
                 db.session.add(challenge)
-                for file in problem["resources"]:
+
+                for f in problem["resources"]:
                     file_path = path.join(chal_path, c)
-                    resource = Resource(name=file,
+                    resource = Resource(name=f,
                                         path=file_path,
                                         challenge=challenge)
                     db.session.add(resource)
@@ -44,3 +54,8 @@ def build_challenges():
                     db.session.commit()
                 except IntegrityError:
                     db.session.rollback()
+                    challenge = Challenge.query.filter_by(
+                            title=problem['title'])
+                    problem_dict.update({'id': challenge.first().id})
+                    challenge.update(problem_dict)
+                    db.session.commit()
