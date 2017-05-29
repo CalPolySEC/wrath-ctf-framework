@@ -10,14 +10,19 @@ This simple flask webapp takes password submission from teams, tallies score tot
 Development Environment
 -----------------------
 
-First, you need to install Redis on your machine and start an instance running.
-
-Then set up a virtual enviornment and install the required sources:
+First, you need to install Redis on your machine and start an instance running
+with the command:
 
 ```
-virtualenv venv
-source venv/bin/activate # (. venv/bin/activate.fish on fish)
-pip install -r requirements.txt
+$ redis-server
+```
+
+Then set up a virtual environment and install the required sources:
+
+```
+$ virtualenv venv
+$ source venv/bin/activate # (. venv/bin/activate.fish on fish)
+$ pip install -r requirements.txt
 ```
 
 To run the app:
