@@ -17,7 +17,7 @@ with the command:
 $ redis-server
 ```
 
-Then set up a virtual enviornment and install the required sources:
+Then set up a virtual environment and install the required sources:
 
 ```
 $ virtualenv venv
