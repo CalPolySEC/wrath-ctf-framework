@@ -9,8 +9,8 @@ import json
 
 def build_problem_options(problem_config, category):
     problem = dict(problem_config)
-    del problem['fleg']
-    del problem['resources']
+    problem.pop('fleg')
+    problem.pop('resources')
 
     problem['fleg_hash'] = hash_fleg(problem_config['fleg'])
     problem['category'] = category
