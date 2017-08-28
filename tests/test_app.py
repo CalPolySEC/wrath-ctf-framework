@@ -114,8 +114,8 @@ def test_login(client):
         assert rv.status_code == code
         return rv
 
-    assert_login_status({}, 200)
-    assert_login_status({'username': 'abc'}, 200)
+    assert_login_status({}, 400)
+    assert_login_status({'username': 'abc'}, 400)
     assert_login_status({'username': 'abc', 'password': 'abc'}, 403)
 
     auth(client)
