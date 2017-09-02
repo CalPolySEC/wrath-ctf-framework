@@ -231,3 +231,34 @@ def test_challenge_page_without_team(client, user_without_team):
     assert rv.headers['Location'].endswith('/')
 
     assert b'You must be part of a team.' in client.get('/').data
+
+
+def test_post_fleg(client, user):
+    rv = client.post('/challenges/', data={'fleg': 'test_fleg'})
+    assert rv.status_code == 200
+    assert b'Correct! You have earned 30 points for your team.' in rv.data
+
+    # No double submit
+    rv = client.post('/challenges/', data={'fleg': 'test_fleg'})
+    assert rv.status_code == 200
+    assert b"You&#39;ve already entered that flag." in rv.data
+
+
+def test_post_fleg_incorrect(client, user):
+    rv = client.post('/challenges/', data={'fleg': 'wrong_fleg'})
+    assert rv.status_code == 200
+    assert b'Nope.' in rv.data
+
+
+def test_fleg_snoop(client, user):
+    rv = client.post('/challenges/', data={'fleg': 'V375BrzPaT'})
+    assert rv.status_code == 303
+    assert rv.headers['Location'] == \
+        'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
+
+
+def test_url_snoop(client, user):
+    rv = client.get('/passwords.zip')
+    assert rv.status_code == 303
+    assert rv.headers['Location'] == \
+        'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
