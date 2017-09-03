@@ -69,8 +69,7 @@ def challenge_page(team):
     resource_urls = {}
     for c in challenges:
         for r in c.resources:
-            resource_urls[r.name] = url_for('.get_resource',
-                                            category=c.category, name=r.name)
+            resource_urls[r.name] = url_for('.get_resource', name=r.name)
     return render_template('challenge.html', challenges=challenges,
                            team=team, form=form, resource_urls=resource_urls)
 
@@ -214,12 +213,11 @@ def snoopin():
     return redirect('https://www.youtube.com/watch?v=dQw4w9WgXcQ', code=303)
 
 
-@bp.route('/file/<category>/<name>/')
+@bp.route('/files/<name>')
 @ensure_team
-def get_resource(team, category, name):
-    resource = core.get_resource(team, category, name)
+def get_resource(team, name):
+    resource = core.get_resource(team, name)
     if resource is None:
         abort(404)
-    else:
-        return send_from_directory(resource.path, resource.name,
-                                   as_attachment=True)
+    return send_from_directory(resource.path, resource.name,
+                               as_attachment=True)

@@ -69,10 +69,8 @@ def get_challenge(team, id):
         return chal
 
 
-def get_resource(team, category, name):
-    resource = Resource.query.filter(Resource.name == name).\
-               join(Challenge).\
-               filter(Challenge.category == category).first()
+def get_resource(team, name):
+    resource = Resource.query.filter(Resource.name == name).first()
     if resource is None or not check_prereqs(team, resource.challenge):
         return None
     else:
