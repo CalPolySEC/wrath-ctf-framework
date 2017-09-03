@@ -210,6 +210,17 @@ def test_home(client, team_data):
     ]
 
 
+def test_team_page(client, team_data):
+    rv = client.get('/teams/10/')
+    assert rv.status_code == 200
+    assert b'<div class="points">40 points</div>' in rv.data
+
+
+def test_nonexistent_team(client):
+    rv = client.get('/teams/1/')
+    assert rv.status_code == 404
+
+
 def test_challenge_page(client, user):
     rv = client.get('/challenges/')
     assert rv.status_code == 200
