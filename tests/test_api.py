@@ -333,13 +333,13 @@ def test_resources(app):
 
         # Try to get file (which we'll compare with the file)
         test_file = open("tests/challenges/example/crypto.rb", 'r')
-        assert api_req(client.get, '/api/file/example/crypto.rb', user,
+        assert api_req(client.get, '/api/files/crypto.rb', user,
                        None, 200) == test_file.read()
         test_file.close()
 
         # Fail due to lack of team
-        api_req(client.get, '/api/file/example/crypto.rb', no_team_user, None,
+        api_req(client.get, '/api/files/crypto.rb', no_team_user, None,
                 403, 'You must be part of a team.')
 
         # Fail due to nx file
-        api_req(client.get, '/api/file/example/nx.rb', user, None, 404)
+        api_req(client.get, '/api/files/nx.rb', user, None, 404)
