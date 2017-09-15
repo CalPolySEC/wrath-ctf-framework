@@ -1,4 +1,5 @@
 from .ext import db
+from sqlalchemy.orm import column_property
 
 
 invite_table = \
@@ -26,18 +27,6 @@ class User(db.Model):
     invites = db.relationship('Team', secondary=invite_table)
 
 
-class Team(db.Model):
-    __tablename__ = 'team'
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(128), unique=True)
-    invited = db.relationship('User', secondary=invite_table)
-    challenges = db.relationship('Challenge', secondary='solve',
-                                 backref='team', collection_class=set)
-
-    def get_points(self):
-        return sum(c.points for c in self.challenges)
-
-
 class Challenge(db.Model):
     __tablename__ = "challenge"
     id = db.Column(db.Integer, primary_key=True)
@@ -59,6 +48,31 @@ class Challenge(db.Model):
                 "category": self.category,
                 "points": self.points,
                 "resources": [r.name for r in self.resources]}
+
+
+class Team(db.Model):
+    __tablename__ = 'team'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(128), unique=True)
+    invited = db.relationship('User', secondary=invite_table)
+    challenges = db.relationship('Challenge', secondary='solve',
+                                 backref='team', collection_class=set)
+
+    score = column_property(
+        db.select([db.func.coalesce(db.func.sum(Challenge.points), 0)])
+        .select_from(db.join(Solve, Challenge,
+                             Solve.challenge_id == Challenge.id))
+        .where(Solve.team_id == id),
+        deferred=True,
+        group='scores',
+    )
+
+    last_solve = column_property(
+        db.select([db.func.max(Solve.earned_on)])
+        .select_from(Solve).where(Solve.team_id == id),
+        deferred=True,
+        group='scores',
+    )
 
 
 class Resource(db.Model):

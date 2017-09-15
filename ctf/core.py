@@ -3,10 +3,11 @@ from base64 import urlsafe_b64encode
 from bcrypt import gensalt, hashpw
 from datetime import datetime
 from flask import current_app
+from sqlalchemy.orm import joinedload, undefer_group
 from werkzeug.security import safe_str_cmp
 from ._compat import want_bytes
 from .ext import db
-from .models import Team, User, Challenge, Resource, Solve
+from .models import Team, User, Challenge, Resource
 import hashlib
 import os
 
@@ -29,12 +30,8 @@ def ensure_active():
 
 
 def get_teams():
-    # This is pure mystical alchemy
-    q = (db.session.query(Team, db.func.coalesce(db.func.sum(Challenge.points),
-                                                 0).label('points'))
-         .outerjoin(Solve).outerjoin(Challenge).group_by(Team.id)
-         .order_by(db.desc('points'), db.func.min(Solve.earned_on), Team.id))
-    return q.all()
+    return (Team.query.options(undefer_group('scores'))
+            .order_by(Team.score.desc(), Team.last_solve, Team.id).all())
 
 
 def get_team(id):
@@ -57,7 +54,8 @@ def check_prereqs(team, challenge):
 
 
 def get_challenges(team):
-    all_challs = Challenge.query.order_by(Challenge.points).all()
+    all_challs = (Challenge.query.options(joinedload(Challenge.resources))
+                  .order_by(Challenge.points).all())
     return list(filter(lambda c: check_prereqs(team, c), all_challs))
 
 

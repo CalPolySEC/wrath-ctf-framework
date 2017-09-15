@@ -190,8 +190,8 @@ def leaderboard():
         'teams': [{
             'id': team.id,
             'name': team.name,
-            'points': points,
-        } for team, points in teams],
+            'points': team.score,
+        } for team in teams],
     })
 
 
@@ -203,7 +203,7 @@ def get_team(id):
     return jsonify({
         'id': team.id,
         'name': team.name,
-        'points': team.get_points(),
+        'points': team.score,
     })
 
 
