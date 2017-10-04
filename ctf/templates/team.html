@@ -4,7 +4,7 @@
     <div class="row">
       <div class="col-md-10 col-md-offset-1">
         <h1 class="team-name"><a href="{{ url_for('.team_page', id=team.id) }}">{{ team.name }}</a></h1>
-        <div class="points">{{ team.get_points() }} points</div>
+        <div class="points">{{ team.score }} points</div>
         <hr />
         <h3>Solves</h3>
         {%- if solves -%}
