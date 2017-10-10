@@ -1,10 +1,10 @@
 """Core application logic."""
 from base64 import urlsafe_b64encode
-from bcrypt import gensalt, hashpw
+from argon2 import PasswordHasher
+from argon2.exceptions import VerificationError
 from datetime import datetime
 from flask import current_app
 from sqlalchemy.orm import joinedload, undefer_group
-from werkzeug.security import safe_str_cmp
 from ._compat import want_bytes
 from .ext import db
 from .models import Team, User, Challenge, Resource
@@ -95,7 +95,7 @@ def user_for_token(token):
 def create_user(username, password):
     if User.query.filter(db.func.lower(User.name) == username.lower()).count():
         raise CtfException('That username is taken.')
-    pw_hash = hashpw(want_bytes(password), gensalt())
+    pw_hash = PasswordHasher().hash(want_bytes(password))
     user = User(name=username, password=pw_hash)
     db.session.add(user)
     db.session.commit()
@@ -103,17 +103,21 @@ def create_user(username, password):
 
 
 def login(username, password):
-    dummy_salt = gensalt()
+    ph = PasswordHasher()
     user = User.query.filter(db.func.lower(User.name) == username.lower()) \
         .first()
-    if user:
-        correct = want_bytes(user.password)
-        pw_hash = hashpw(want_bytes(password), correct)
-        if safe_str_cmp(pw_hash, correct):
-            return user
-    else:
-        # Defeat username discovery
-        hashpw(want_bytes(password), dummy_salt)
+    try:
+        if user:
+            if ph.verify(user.password, want_bytes(password)):
+                return user
+            else:
+                raise CtfException('Incorrect username or password.')
+        else:
+            # Defeat userame discovery
+            ph.verify('', '')
+    except VerificationError:
+        raise CtfException('Incorrect username or password.')
+
     raise CtfException('Incorrect username or password.')
 
 
