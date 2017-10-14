@@ -80,7 +80,8 @@ def team_page(id):
     team = core.get_team(id)
     if not team:
         abort(404)
-    solves = core.get_challenges(team)
+    solves = list(team.challenges)
+    solves.sort(key=lambda s: s.id)
     return render_template('team.html', team=team, solves=solves)
 
 
