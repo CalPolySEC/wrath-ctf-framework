@@ -8,6 +8,7 @@ from ._compat import urlparse
 from .core import CtfException
 from .forms import CreateForm, LoginForm, TeamForm, SubmitForm, InviteForm, \
                    JoinForm
+from .models import User
 
 
 bp = Blueprint('frontend', __name__)
@@ -23,8 +24,8 @@ def ensure_user(fn):
     @wraps(fn)
     def inner(*args, **kwargs):
         user = None
-        if 'key' in session:
-            user = core.user_for_token(session['key'])
+        if 'user_id' in session:
+            user = User.query.get(session['user_id'])
         if user is None:
             flash('You must be logged in to do that.', 'danger')
             return redirect(url_for('.login', next=request.path), code=303)
@@ -111,8 +112,7 @@ def create_user():
             flash(exc.message, 'danger')
             code = 409
         else:
-            key = core.create_session_key(user)
-            session['key'] = key
+            session['user_id'] = user.id
             session.permanent = True
             return redirect_next(fallback=url_for('.home_page'), code=303)
     elif request.method == 'POST':
@@ -187,8 +187,7 @@ def login():
             flash(exc.message, 'danger')
             code = 403
         else:
-            key = core.create_session_key(user)
-            session['key'] = key
+            session['user_id'] = user.id
             session.permanent = True
             return redirect_next(fallback=url_for('.home_page'), code=303)
     elif request.method == 'POST':
