@@ -182,7 +182,7 @@ def test_login_incorrect(client, username, password):
     form_data = {'username': username, 'password': password}
     rv = client.post('/login/', data=form_data)
     assert rv.status_code == 403
-    assert b'Incorrect username or password.' in rv.data
+    assert b'Incorrect password.' in rv.data
 
 
 def test_home(client, team_data):

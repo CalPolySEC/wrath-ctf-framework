@@ -113,7 +113,7 @@ def login(username, password):
     if user and crypto_pwhash_str_verify(user.password, want_bytes(password)):
         return user
     else:
-        raise CtfException('Incorrect username or password.')
+        raise CtfException('Incorrect password.')
 
 
 def create_team(user, name):

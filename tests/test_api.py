@@ -80,9 +80,9 @@ def test_user_auth(app):
         create_user('test', 'badpw', 409, 'That username is taken.')
 
         # Login
-        login('abc', 'badpw', 403, 'Incorrect username or password.')
-        login('test', 'badpw', 403, 'Incorrect username or password.')
-        login('test', 'test', 403, 'Incorrect username or password.')
+        login('abc', 'badpw', 403, 'Incorrect password.')
+        login('test', 'badpw', 403, 'Incorrect password.')
+        login('test', 'test', 403, 'Incorrect password.')
 
         data = login('test', 'test😊', 201)
         key = data['key']
