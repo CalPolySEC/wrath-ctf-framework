@@ -1,7 +1,10 @@
 """Core application logic."""
 from base64 import urlsafe_b64encode
-from argon2 import PasswordHasher
-from argon2.exceptions import VerificationError
+from pysodium import (crypto_pwhash_argon2i_MEMLIMIT_INTERACTIVE as
+                      ARGON2_MEMLIMIT,
+                      crypto_pwhash_argon2i_OPSLIMIT_INTERACTIVE as
+                      ARGON2_OPSLIMIT,
+                      crypto_pwhash_str, crypto_pwhash_str_verify)
 from datetime import datetime
 from flask import current_app
 from sqlalchemy.orm import joinedload, undefer_group
@@ -95,7 +98,9 @@ def user_for_token(token):
 def create_user(username, password):
     if User.query.filter(db.func.lower(User.name) == username.lower()).count():
         raise CtfException('That username is taken.')
-    pw_hash = PasswordHasher().hash(want_bytes(password))
+    pw_hash = crypto_pwhash_str(want_bytes(password),
+                                ARGON2_OPSLIMIT,
+                                ARGON2_MEMLIMIT)
     user = User(name=username, password=pw_hash)
     db.session.add(user)
     db.session.commit()
@@ -103,22 +108,12 @@ def create_user(username, password):
 
 
 def login(username, password):
-    ph = PasswordHasher()
     user = User.query.filter(db.func.lower(User.name) == username.lower()) \
         .first()
-    try:
-        if user:
-            if ph.verify(user.password, want_bytes(password)):
-                return user
-            else:
-                raise CtfException('Incorrect username or password.')
-        else:
-            # Defeat userame discovery
-            ph.verify('', '')
-    except VerificationError:
+    if user and crypto_pwhash_str_verify(user.password, want_bytes(password)):
+        return user
+    else:
         raise CtfException('Incorrect username or password.')
-
-    raise CtfException('Incorrect username or password.')
 
 
 def create_team(user, name):
