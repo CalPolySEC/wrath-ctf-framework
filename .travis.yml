@@ -19,7 +19,7 @@ matrix:
     env: TOXENV=py27-devel
   - python: 2.6
     env: TOXENV=py26
-before_install: sudo apt-get update && sudo apt-get install libsodium-dev
+before_install: sudo apt-get update && sudo apt-get install libsodium
 install: pip install tox
 script: tox
 notifications:
