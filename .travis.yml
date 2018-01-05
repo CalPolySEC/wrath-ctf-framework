@@ -19,7 +19,11 @@ matrix:
     env: TOXENV=py27-devel
   - python: 2.6
     env: TOXENV=py26
-before_install: sudo apt-get update && sudo apt-get install libsodium18
+before_install:
+    - sudo add-apt-repository ppa:chris-lea/libsodium;
+    - sudo echo "deb http://ppa.launchpad.net/chris-lea/libsodium/ubuntu trusty main" >> /etc/apt/sources.list
+    - sudo echo "deb-src http://ppa.launchpad.net/chris-lea/libsodium/ubuntu trusty main" >> /etc/apt/sources.list
+    - sudo apt-get update && sudo apt-get install libsodium-dev
 install: pip install tox
 script: tox
 notifications:
