@@ -19,6 +19,7 @@ matrix:
     env: TOXENV=py27-devel
   - python: 2.6
     env: TOXENV=py26
+dist: xenial
 before_install:
     - sudo add-apt-repository ppa:chris-lea/libsodium -y 
     - echo "deb http://ppa.launchpad.net/chris-lea/libsodium/ubuntu trusty main" | sudo tee -a /etc/apt/sources.list > /dev/null
