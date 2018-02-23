@@ -152,5 +152,5 @@ def test_logout(client):
     assert get_token(client) != token
 
 # Test the thing
-def test_bad(client)
+def test_bad(client):
     assert False
