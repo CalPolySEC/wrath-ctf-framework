@@ -1,6 +1,7 @@
 WRATH CTF Framework
 ===================
 [![Build Status](https://travis-ci.org/WhiteHatCP/wrath-ctf-framework.svg?branch=master)](https://travis-ci.org/WhiteHatCP/wrath-ctf-framework)
+[![Rawsec's CyberSecurity Inventory](https://inventory.rawsec.ml/img/badges/Rawsec-inventoried-FF5050_flat.svg)](https://inventory.rawsec.ml/ctf_platforms.html#WRATH%20CTF%20Framework)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/DeltaHeavy/wrath-ctf-framework/master/LICENSE)
 
 **What? Really? Another Tiny Homebrewed CTF Framework?**
